@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="arduino" />
+		<meta name="tags" content="python" />
+		<meta name="tags" content="twitter" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Contrôlons Nos Cafetières</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:20:58+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/arduino.html">arduino</a></li>
+				<li><a href="/tag/python.html">python</a></li>
+				<li><a href="/tag/twitter.html">twitter</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>A force de jeter un coup d'oeil sur les blogs de différentes
+personnes/organisations, j'ai fini par tomber sur celui du <strong>LOL</strong>
+(<a class="reference external" href="http://labolyon.fr">Laboratoire Ouvert Lyonnais</a>) et sur le projet
+de serveur <strong>HTCPCP</strong>. Ce truc m'a plut et j'ai eu envie de tester la
+chose.</p>
+<div class="section" id="htcpcp">
+<h2>HTCPCP</h2>
+<p>Il faut savoir que les standards de l'internet (et de l'informatique en
+général) sont donnés dans des <strong>RFC</strong> (<em>Request For Comments</em>) et que,
+souvent, le 1er Avril sort une <strong>RFC</strong> fantaisiste.</p>
+<p>Le 1er Avril 1998 est parue la <strong>RFC2324</strong> intitulée : <em>Hyper Text Coffe
+Pot Control Protocol (HTCPCP/1.0)</em>. Ce texte défini une série de règles
+pour contraindre un protocole de contrôle hyper texte des cafetières.</p>
+<div class="section" id="methodes">
+<h3>Méthodes</h3>
+<p>La RFC2324 énumère les méthodes utilisée pour l'envoi et la requète de
+données au serveur :</p>
+<ul class="simple">
+<li><strong>BREW</strong>/<strong>POST</strong> : permet le lancement d'actions (<strong>POST</strong> est
+désapprouvé)</li>
+<li><strong>GET</strong> : permet de récuperer le café</li>
+<li><strong>PROPFIND</strong> (<em>WEBDAV</em>) : permet d'atteindre les métadonnées liées au
+café</li>
+<li><strong>WHEN</strong> : permet de stopper l'adjonction de lait si besoin</li>
+</ul>
+</div>
+<div class="section" id="headers">
+<h3>Headers</h3>
+<p>La RFC2324 définit quelques headers dont <tt class="docutils literal"><span class="pre">accept-additions</span></tt> pour
+ajouter des choses dans le café (lait, alcool, autre...).</p>
+</div>
+<div class="section" id="codes-de-retour">
+<h3>Codes de retour</h3>
+<p>Les codes de retour utilisé sont :</p>
+<ul class="simple">
+<li><strong>406 Not Acceptable</strong></li>
+<li><strong>418 I'm A Teapot</strong> : le serveur est une théière</li>
+</ul>
+<p>Il existe au moins 2 implémentations serveur de la fameuse erreur 418 :</p>
+<ul class="simple">
+<li>à la <a class="reference external" href="http://www.bbc.co.uk/cbeebies/418">BBC</a></li>
+<li>chez <a class="reference external" href="http://134.219.188.123/">un geek</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="le-client">
+<h2>Le client</h2>
+<p>Des implémentations de la partie client existent. On prendra par exemple
+le cas d'emacs et du script emacs-lisp
+<a class="reference external" href="http://www.northbound-train.com/emacs-hosted/coffee.el">coffee.el</a></p>
+<p>Créer un client vers un serveur <strong>HTCPCP</strong> n'a rien de très compliqué en
+soi.</p>
+</div>
+<div class="section" id="le-serveur">
+<h2>Le Serveur</h2>
+<p>A ma connaissance, aucun vrai serveur <strong>HTCPCP</strong> n'existe à ce jour et
+il a de fortes chance que le <strong>LOL</strong> soit le premier organisme à en
+écrire un.</p>
+<p>Pour ma part, je me suis contenté d'écrire un script python d'interface
+entre twitter et un arduino pour le contrôle de ma cafetière via le
+réseau social, on y revient un peu plus tard.</p>
+</div>
+<div class="section" id="de-mon-cote">
+<h2>De mon côté</h2>
+<p>De mon côté, j'ai voulu réaliser un proof of concept pour le contrôle
+d'une cafetière depuis twitter, via un arduino.</p>
+<p>En gros, j'utilise une liaison série entre un PC (ou un script s'occupe
+de vérifier sur twitter s'il faut envoyer la sauce) et un arduino qui se
+charge de commuter l'alim de la cafetière.</p>
+<p>Tout le code est sous <strong>license WTFPL</strong> et disponible <a class="reference external" href="https://github.com/Matael/Arduino-CoffeePot">sur
+github</a>.</p>
+<p><em>Note :</em> la conception du fameux circuit de commutation relève de la
+pure électronique et ne devrait pas tarder.</p>
+<div class="section" id="arduino">
+<h3>Arduino</h3>
+<p>Le code pour arduino est trivial, je reviendrais sur l'utilisation de la
+liaison série dans un autre article.</p>
+<p>Il vous faut quand même savoir (pour comprendre mes comparaisons à 48 et
+49) que la laison est en <strong>ASCII</strong> et que d'après ce <em>charset</em> :</p>
+<ul class="simple">
+<li>0 = 48</li>
+<li>1 = 49</li>
+</ul>
+<p>Voilà le code (plus commenté que la version du dépot) :</p>
+<div class="highlight"><pre><span></span><span class="c1">// Ceci est un sketch arduino pour interagir avec un PC et une cafetière</span>
+<span class="c1">//</span>
+<span class="c1">// Date : 12/2011</span>
+<span class="c1">// Auteur : Mathieu (matael) Gaborit</span>
+<span class="c1">// License : WTFPL</span>
+<span class="c1">//</span>
+<span class="c1">// ---------------------------------------------------------</span>
+<span class="c1">// Controles :</span>
+<span class="c1">// -&gt; liaison vers la caftière =&gt; pin13</span>
+<span class="c1">// -&gt; USB =&gt; Rx/Tx (géré via la lib Serial)</span>
+<span class="c1">// -&gt; Code de contrôle :</span>
+<span class="c1">// - [Rx] 1 =&gt; lancer l&#39;infusion</span>
+<span class="c1">// - [Rx] 0 =&gt; Stopper l&#39;infusion</span>
+
+<span class="cp">#define COFFEE_POT 13 </span><span class="c1">// pin de contrôle vers la cafetière</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">COFFEE_POT</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="n">Serial</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">9600</span><span class="p">);</span> <span class="c1">// Init. de la laison série</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="c1">// si on a au moins 1 caractère dans le buffer ...</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">Serial</span><span class="p">.</span><span class="n">available</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">){</span>
+        <span class="kt">int</span> <span class="n">read_out</span> <span class="o">=</span> <span class="n">Serial</span><span class="p">.</span><span class="n">read</span><span class="p">();</span> <span class="c1">// on le lit</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">read_out</span> <span class="o">==</span> <span class="mi">49</span><span class="p">){</span> <span class="c1">// si c&#39;est un &quot;1&quot; (ASCII:49)</span>
+            <span class="n">digitalWrite</span><span class="p">(</span><span class="n">COFFEE_POT</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span> <span class="c1">// on lance la cafetière</span>
+            <span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">&quot;Starting coffee pot...&quot;</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">read_out</span> <span class="o">==</span> <span class="mi">48</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// si c&#39;est un &quot;0&quot; (ASCII:48)</span>
+            <span class="n">digitalWrite</span><span class="p">(</span><span class="n">COFFEE_POT</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span> <span class="c1">// on arrête la cafetière</span>
+            <span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">&quot;Stopping coffee pot... :&#39;(&quot;</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="c1">// sinon, on écrit sur la liaison que le code</span>
+            <span class="c1">// de controle n&#39;est pas bon</span>
+            <span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">&quot;Bad control code....&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="python">
+<h2>Python</h2>
+<p>La liaison avec twitter se fait via le module
+<a class="reference external" href="http://code.google.com/p/python-twitter/">python-twitter</a> et celle
+avec l'arduino via le module
+<a class="reference external" href="http://pyserial.sourceforge.net/">pySerial</a></p>
+<p>Voilà une version sur-commentée de la bête :</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python2</span>
+<span class="c1">#-*- encoding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># bridge.py</span>
+<span class="c1">#</span>
+<span class="c1"># 12/2011 Mathieu Gaborit &lt;mat.gaborit@gmx.com&gt;</span>
+<span class="c1"># License : WTFPL</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">twitter</span> <span class="c1"># le fameux module python-twitter</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">re</span> <span class="c1"># les regexs</span>
+<span class="kn">import</span> <span class="nn">serial</span> <span class="c1"># le module série</span>
+
+<span class="c1">#############################################</span>
+<span class="c1">################# S E T U P #################</span>
+<span class="c1">#############################################</span>
+
+<span class="n">consumer_key</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="c1"># clé d&#39;API twitter pour le compte lié à la cafetière</span>
+<span class="n">consumer_secret</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="c1"># Code secret pour le compte de la cafetière</span>
+<span class="n">master_name</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;&#39;</span> <span class="c1"># pseudo twitter du maitre de la cafetière</span>
+<span class="n">serial_port</span> <span class="o">=</span> <span class="s2">&quot;/dev/ttyACM0&quot;</span> <span class="c1"># port série vers l&#39;arduino</span>
+<span class="n">re_start</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;givemecoffee&#39;</span><span class="p">)</span> <span class="c1"># motif à matcher pour la mise en route</span>
+<span class="n">re_stop</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;thanksforcoffee&#39;</span><span class="p">)</span> <span class="c1"># motif à matcher pour l&#39;arrêt</span>
+<span class="n">update_time</span> <span class="o">=</span> <span class="mi">30</span> <span class="c1"># temps séparant deux vérification de tweet (en secondes)</span>
+
+<span class="c1">#############################################</span>
+
+
+<span class="k">def</span> <span class="nf">do_coffee</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ser</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Must i send a signal to the coffee pot ?&quot;&quot;&quot;</span>
+
+    <span class="c1"># on récupère la dernière mention pour la cafetière</span>
+    <span class="n">mention</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">GetMentions</span><span class="p">()[:</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">mention</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">_screen_name</span> <span class="o">==</span> <span class="n">master_name</span><span class="p">:</span>
+        <span class="c1"># si elle vient du maître, on la traite...</span>
+        <span class="k">if</span> <span class="n">re_start</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">mention</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">):</span>
+            <span class="c1"># si on trouve le motif de lancement...</span>
+
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Hey ! Let&#39;s make coffee !&quot;</span><span class="p">)</span>
+            <span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">)</span> <span class="c1"># on envoie un 1 sur la liaison série</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="k">elif</span> <span class="n">re_stop</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">mention</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">):</span>
+            <span class="c1"># si on trouve de motif d&#39;arrêt</span>
+
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Yeah ! Coffee&#39;s ready !&quot;</span><span class="p">)</span>
+            <span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="c1"># on envoie un 0 sur la liaison série</span>
+            <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span> <span class="c1"># sinon, on attend</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Waiting for a tweet...&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+<span class="c1"># créons une instance de la classe d&#39;API</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">twitter</span><span class="o">.</span><span class="n">Api</span><span class="p">(</span>
+        <span class="n">consumer_key</span><span class="o">=</span><span class="n">consumer_key</span><span class="p">,</span>\
+        <span class="n">consumer_secret</span><span class="o">=</span><span class="n">consumer_secret</span><span class="p">,</span>\
+        <span class="n">access_token_key</span><span class="o">=</span><span class="s1">&#39;87711832-0X6wvXnI8mxByu4PrxFO8XVa6uLyBgcLSA6jrXMw&#39;</span><span class="p">,</span>\
+        <span class="n">access_token_secret</span><span class="o">=</span><span class="s1">&#39;mNcosbbAkHtNubTztJuW9bjBArN60sTgcAUTm6dmX4&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Connected to the twitter API&quot;</span><span class="p">)</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Failed to load twitter API&quot;</span><span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># on tente d&#39;initialiser la liaison série</span>
+    <span class="n">ser</span> <span class="o">=</span> <span class="n">serial</span><span class="o">.</span><span class="n">Serial</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">serial_port</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Serial Connection opened...&quot;</span><span class="p">)</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Failed to load serial connection&quot;</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Entering main loop....&quot;</span><span class="p">)</span>
+<span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">do_coffee</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ser</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">update_time</span><span class="p">)</span>
+<span class="k">return</span> <span class="mi">0</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span> <span class="n">main</span><span class="p">()</span>
+</pre></div>
+<p>Si vous mettez le tout en branle, vous remarquerez que la led sur la pin
+13 s'allume quand on envoie le pattern de début et s'éteint à la
+recpetion du pattern de fin. Il ne me reste qu'a créer ce circuit de
+commutation et tout sera OK !</p>
+</div>
+<div class="section" id="liens">
+<h2>Liens</h2>
+<ul class="simple">
+<li>Wikipedia : <a class="reference external" href="http://fr.wikipedia.org/wiki/Hyper_Text_Coffee_Pot_Control_Protocol">(fr) HTCPCP</a></li>
+<li>Wikipedia : <a class="reference external" href="http://en.wikipedia.org/wiki/Hyper_Text_Coffee_Pot_Control_Protocol">(en) HTCPCP</a></li>
+<li><a class="reference external" href="http://code.google.com/p/python-twitter/">python-twitter</a></li>
+<li><a class="reference external" href="http://pyserial.sourceforge.net/">pySerial</a></li>
+<li>le site du <a class="reference external" href="http://labolyon.fr">Laboratoire Ouvert Lyonnais</a></li>
+<li>le site <a class="reference external" href="http://www.asciitable.com/&gt;`_">asciitable.com</a></li>
+<li>la <a class="reference external" href="http://datatracker.ietf.org/doc/rfc2324/_">RFC2324</a></li>
+<li>le projet <a class="reference external" href="https://github.com/Matael/Arduino-CoffeePot">sur github</a></li>
+</ul>
+<blockquote>
+</blockquote>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

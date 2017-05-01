@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="python" />
+		<meta name="tags" content="qrcodes" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Python and QRCodes</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:28:38+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/python.html">python</a></li>
+				<li><a href="/tag/qrcodes.html">qrcodes</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Few days ago, I decided to try to generate QRCodes.</p>
+<p>This article just shows a possibility using Python.</p>
+<div class="section" id="tools">
+<h2>Tools</h2>
+<p>Googling for <em>QRCodes generation</em> I found some websites proposing to generate QRCodes for you.</p>
+<img alt="" class="align-right" src="/static/images/qr/qr.png" style="width: 300px;" />
+<p>The <a class="reference external" href="http://zxing.appspot.com/generator/">ZXing Generator</a> and the <a class="reference external" href="http://qrcode.kaywa.com/">Kaywa Generator</a> seem really powerful and complete, but I was looking for a way of integring QRCode-generation in an piece of software without requiring an Internet access.</p>
+<p>A guy (<strong>MarkTraceur</strong>) commented my post on reddit, talking about a tool he built : <a class="reference external" href="https://qrustom.com/">QRustom</a> ! Thanks to him !</p>
+<p>With python, you can use <a class="reference external" href="http://pyqrcode.sourceforge.net/">pyqrcode</a> but it works using a C/C++ encoder and a Java decoder...</p>
+<p>I also found the <a class="reference external" href="http://code.google.com/p/pyqrnative/">PyQRNative</a> lib that seems to be a rewriting of this <a class="reference external" href="http://d-project.googlecode.com/svn/trunk/misc/qrcode/js/qrcode.js">javascript generator</a> (pretty sure great things can be done using this JS lib and <a class="reference external" href="http://nodejs.org/">Node.js</a>).</p>
+<p>The code (that you can <tt class="docutils literal">wget</tt> <a class="reference external" href="http://pyqrnative.googlecode.com/svn/trunk/pyqrnative/src/PyQRNative.py">here</a>) would need a serious rewriting to become <a class="reference external" href="http://www.python.org/dev/peps/pep-0008/">PEP8</a> compliant and <strong>documented</strong> but it works (here's a QR containing URL for this post generated using PyQRNative).</p>
+<p><strong>EDIT :</strong> After my post on reddit, Chris Beaven told me he did the rewriting. His version is available on <a class="reference external" href="http://pypi.python.org/pypi/qrcode">Pypi</a>. I've also rewritten this article using his lib.</p>
+<p>Note that you'll have also to install the <a class="reference external" href="http://www.pythonware.com/products/pil/">Python Imaging Library</a> (PIL) in order to generate the images themselves.</p>
+<p>Just run :</p>
+<div class="highlight"><pre><span></span>$ sudo pip install pil qrcode
+</pre></div>
+</div>
+<div class="section" id="usage">
+<h2>Usage</h2>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">qrcode</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">qr</span> <span class="o">=</span> <span class="n">QRCode</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">error_correction</span><span class="o">=</span><span class="n">ERROR_CORRECT_L</span><span class="p">)</span>
+<span class="n">qr</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="s2">&quot;http://blog.matael.org/&quot;</span><span class="p">)</span>
+<span class="n">qr</span><span class="o">.</span><span class="n">make</span><span class="p">()</span> <span class="c1"># Generate the QRCode itself</span>
+
+<span class="c1"># im contains a PIL.Image.Image object</span>
+<span class="n">im</span> <span class="o">=</span> <span class="n">qr</span><span class="o">.</span><span class="n">make_image</span><span class="p">()</span>
+
+<span class="c1"># To save it</span>
+<span class="n">im</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;filename.png&quot;</span><span class="p">)</span>
+</pre></div>
+<p>At line 3, we instanciate a new <tt class="docutils literal">qrcode.QRCode</tt> object using two parameters.
+This class has other parameters that we don't use here (<tt class="docutils literal">box_size</tt>, <tt class="docutils literal">border</tt>, etc...).</p>
+<p>The first one is the QR version, an integer between 0 and 40 which define the size of the barcode and the amount of data we'll be able to store.</p>
+<p>The second is the correction level (redundancy).
+As said on <a class="reference external" href="http://en.wikipedia.org/wiki/QR_code">Wikipedia</a>, you can choose between :</p>
+<dl class="docutils">
+<dt><tt class="docutils literal">ERROR_CORRECT_L</tt></dt>
+<dd>7% of codewords can be restored</dd>
+<dt><tt class="docutils literal">ERROR_CORRECT_M</tt> (default)</dt>
+<dd>15% can be restored</dd>
+<dt><tt class="docutils literal">ERROR_CORRECT_Q</tt></dt>
+<dd>25% can be restored</dd>
+<dt><tt class="docutils literal">ERROR_CORRECT_H</tt></dt>
+<dd>30% can be restored</dd>
+</dl>
+<p>It's this redundancy phenomenon that enables decoding even if the code is damaged.</p>
+<div class="section" id="when-the-lib-guess-what-you-need">
+<h3>When the lib guess what you need</h3>
+<p>The <tt class="docutils literal">qrcode</tt> module add the <tt class="docutils literal">fit</tt> parameter to the <tt class="docutils literal">QRCode.make()</tt> method. If <tt class="docutils literal">fit</tt> is used and <tt class="docutils literal">QRCode.version</tt> is set to <tt class="docutils literal">None</tt>, <tt class="docutils literal">qrcode</tt> will guess the right version.</p>
+</div>
+<div class="section" id="faster">
+<h3>Faster !</h3>
+<p>This rewriting bring a short version for fast generation :</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">qrcode</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">qrcode</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s2">&quot;your awesome data&quot;</span><span class="p">)</span>
+</pre></div>
+<p><strong>Chris, thank you for that great work !</strong></p>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>QR Codes are an elegant way of share data between devices.</p>
+<p>They can be used for a lot of applications, from product tracking inside a factory to blog post URL.</p>
+<p>The redundancy phenomenon allow artistic use or deformation of QR Codes and things like that :</p>
+<img alt="" class="align-center" src="/static/images/qr/qr_matael.png" style="width: 300px;" />
+<p>I really think that these codes are powerful.</p>
+<p>Note also that, using <a class="reference external" href="http://processing.org">processing</a> and QR Codes, you can do <a class="reference external" href="http://answers.oreilly.com/topic/1337-how-to-do-augmented-reality-in-processing/">Augmented Reality</a> ;)</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

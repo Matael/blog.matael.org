@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="python" />
+		<meta name="tags" content="haum" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Un micro-planet pour Sphinx en moins de 30sloc</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:28:43+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/python.html">python</a></li>
+				<li><a href="/tag/haum.html">haum</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Un peu de contexte... Le HAUM a un <a class="reference external" href="http://haum.org">site web</a> et, il y a quelque temps, s'est posée la question de ramener sur le site
+les liens vers les articles de blogs parlant de nous.</p>
+<p>Alors certes, c'est un bête <a class="reference external" href="http://fr.wikipedia.org/wiki/Planet">planet</a> me direz vous. Mais voyez-vous, je suis pas particulièrement pour charger le serveur
+avec un nouveau site... surtout quand on a pas des dizaines de blogs à parser. On a décidé de partir sur un &quot;cahier des
+charges&quot; tacite et hyper-simple :</p>
+<ul class="simple">
+<li>la solution doit s'intégrer facilement dans le site existant ;</li>
+<li>le côté dynamique peut être réalisé sans problème à la main ou par simple <em>crontask</em> (pour le lancement de la
+récupération) ;</li>
+<li>la solution doit être <strong>simple</strong> ;</li>
+<li>on doit pouvoir rajouter facilement des blogs quelque soit l'interface fournie par ceux ci.</li>
+</ul>
+<p>De mon point de vue, un truc tout simple pouvait répondre à ça : un script. Un script tout bête.</p>
+<div class="section" id="archi-generale">
+<h2>Archi générale</h2>
+<p>Avant de me lancer dans le code, je me suis demandé comment satisfaire à la possibilité d'une extension rapide des
+sources d'articles... En me souvenant d'une fonction de Python que je n'avais plus utilisée ainsi depuis longtemps, j'ai
+décidé que l'archi ressemblerait à</p>
+<pre class="literal-block">
+sphinx_dir
+├── build
+│&nbsp;&nbsp; └── html
+└── source
+    ├── page1.rst
+    ├── page2.rst
+    ├── planet.rst
+    └── planet
+        ├── fetchall.py
+        └── sources
+            ├── __init__.py
+            ├── source1.py
+            └── source2.py
+</pre>
+<p>Ainsi, dans le même dossier que les pages actuelles je rajoute un dossier <tt class="docutils literal">planet</tt> qui contiendra tout le nécessaire :</p>
+<ul class="simple">
+<li>les sources sous forme de modules dans <tt class="docutils literal">sources/</tt></li>
+<li>le script <tt class="docutils literal">fetchall.py</tt> qui appelle une fonction <tt class="docutils literal">fetch()</tt> sur chacun des modules du répertoire <tt class="docutils literal">sources/</tt> et qui
+gènère la page <tt class="docutils literal">planet.rst</tt></li>
+</ul>
+<p>Dans l'ordre, je vous montre d'abord les scripts sources puis le script général (qui fera moins de 30 lignes de code effectif).</p>
+</div>
+<div class="section" id="sources">
+<h2>Sources !</h2>
+<p>Les sources sont de simples scripts qui récupèrent les titres et URL d'articles sur un site donné.
+Si le blog possède un <a class="reference external" href="http://fr.wikipedia.org/wiki/RSS">flux RSS</a> (comme le mien), alors, il suffit d'appeler <tt class="docutils literal">feedparser</tt> à la rescousse par exemple.
+Sinon, on code de quoi récupérer la liste (on verra un exemple avec le <a class="reference external" href="http://blog.fredblain.org/">blog de feedoo</a>).</p>
+<p>On va s'arranger pour que les fonctions <tt class="docutils literal">fetch()</tt> des sources répondent à 2 specs :</p>
+<ul class="simple">
+<li>elles n'ont pas besoin de paramètres</li>
+<li>elles renvoient une liste de tuples : <tt class="docutils literal">(titre, url, auteur)</tt></li>
+</ul>
+<div class="section" id="un-blog-avec-un-flux-rss">
+<h3>Un blog avec un flux RSS</h3>
+<p>Rien de plus simple. On va, par exemple, récupérer les articles de mon blog, taggés avec <strong>haum</strong>. Pour ça, il y a un flux RSS à
+l'adresse <a class="reference external" href="http://blog.matael.org/writing/tagged/haum/feed/">http://blog.matael.org/writing/tagged/haum/feed/</a> .</p>
+<p>Donc c'est parti :</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">feedparser</span> <span class="kn">as</span> <span class="nn">fp</span>
+
+<span class="n">SOURCE_URL</span> <span class="o">=</span> <span class="s1">&#39;http://blog.matael.org/writing/tagged/haum/feed&#39;</span>
+
+<span class="k">def</span> <span class="nf">fetch</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">[(</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">],</span> <span class="n">_</span><span class="p">[</span><span class="s1">&#39;link&#39;</span><span class="p">],</span> <span class="s1">&#39;Mathieu (matael)&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">fp</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">SOURCE_URL</span><span class="p">)[</span><span class="s1">&#39;entries&#39;</span><span class="p">]]</span>
+</pre></div>
+<p>Je vous avais prévenus : c'est simple. La dernière ligne fait, vous l'aurez compris, tout le boulot. C'est une bonne
+vieille <em>list comprehension</em> et qui formate correctement la sortie du parser de flux (pour savoir pourquoi je récupère
+l'élément <tt class="docutils literal">entries</tt> après le <em>fetch</em> regardez la structure du flux RSS...).</p>
+</div>
+<div class="section" id="un-blog-sans-rss">
+<h3>Un blog sans RSS</h3>
+<p>Alors, là, c'est plus velu... non, j'déconne.</p>
+<p>Sur son blog, <a class="reference external" href="http://twitter.com/fblain">feedoo</a> n'a pas de flux RSS mais il a tout de même des pages de catégorie. Si on regarde, celle pour la
+catégorie &quot;haum&quot; est à l'adresse : <a class="reference external" href="http://blog.fredblain.org/tag/haum">http://blog.fredblain.org/tag/haum</a></p>
+<blockquote>
+<strong>EDIT :</strong> feedoo me fait remarquer qu'il a bel et un un flux RSS mais que celui ci est global (et pas propre à une
+catégorie). A noter qu'en prenant ça en compte, on aurait pu le récupérer avec <tt class="docutils literal">feedparser</tt> et filtrer ensuite pour
+n'avoir que le tag <em>haum</em></blockquote>
+<p>En lisant le code de cette page, on remarque que les titres d'article sont tous dans une balise <tt class="docutils literal">h2</tt> portant la classe
+<tt class="docutils literal"><span class="pre">title-index</span></tt> et contenant un lien vers l'article lui-même. Un bon coup de BeautifulSoup pour mâcher le HTML et on
+récupère ce qu'il nous faut :</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span>  <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="n">SOURCE_URL</span> <span class="o">=</span> <span class="s2">&quot;http://blog.fredblain.org/tag/haum&quot;</span>
+
+<span class="k">def</span> <span class="nf">fetch</span><span class="p">():</span>
+    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">SOURCE_URL</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">[(</span>
+        <span class="n">_</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+        <span class="n">_</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;Fred (feedoo)&#39;</span>
+    <span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">findAll</span><span class="p">(</span><span class="s1">&#39;h2&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;title-index&#39;</span><span class="p">})]</span>
+</pre></div>
+<dl class="docutils">
+<dt>Là aussi la dernière ligne (qui est splittée pour des raisons de lisibilité) fait tout le boulot... allez, je l'explique</dt>
+<dd>(de la fin vers le début):</dd>
+</dl>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="c1"># la variable _ prendra tour à tour chacun</span>
+         <span class="c1"># des éléments dans la fonction ci dessous</span>
+
+<span class="n">soup</span><span class="o">.</span><span class="n">findAll</span><span class="p">(</span><span class="s1">&#39;h2&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;title-index&#39;</span><span class="p">})</span>  <span class="c1"># dans la soupe, chercher toutes les balises</span>
+                                              <span class="c1"># h2 assorties d&#39;une classe title-index</span>
+<span class="c1"># avec tous ces éléments, on construit ce genre de tuple :</span>
+<span class="p">(</span>
+    <span class="n">_</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>           <span class="c1"># le texte du lien (titre du post)</span>
+    <span class="n">_</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">),</span>    <span class="c1"># la cible du lien</span>
+    <span class="s1">&#39;Fred (feedoo)&#39;</span>             <span class="c1"># l&#39;illustre auteur</span>
+<span class="p">)</span>
+</pre></div>
+<p>Et... voilà !</p>
+<p>Vous n'allez pas me dire que c'était compliqué !</p>
+</div>
+</div>
+<div class="section" id="le-gros-mechant-script">
+<h2>Le gros méchant script</h2>
+<p>On va se fendre la gueule... je vous explique rapidement le concept. Dans l'ordre, le script va récupérer les
+différents liens pour les posts via les fonctions <tt class="docutils literal">fetch()</tt> et tout écrire dans un fichier. Une fois n'est pas
+coutume, on va commencer par la fin (parce que c'est plus simple) : l'affichage.</p>
+<div class="highlight"><pre><span></span><span class="c1"># le fichier dans lequel on écrit</span>
+<span class="n">OUTPUT_FILE</span> <span class="o">=</span> <span class="s1">&#39;../planet.rst&#39;</span>
+
+<span class="c1"># le début du fichier</span>
+<span class="c1"># (pour pas attaquer direct sur la liste)</span>
+<span class="n">HEADER</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Planet</span>
+<span class="s2">======</span>
+
+<span class="s2">Voilà ceux qui parlent de nous sur leurs blogs</span>
+
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="k">def</span> <span class="nf">output</span><span class="p">(</span><span class="n">f_res</span><span class="p">):</span>
+    <span class="c1"># f_res : fetch results</span>
+
+    <span class="c1"># on ouvre le fichier</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">OUTPUT_FILE</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out</span><span class="p">:</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">HEADER</span><span class="p">)</span> <span class="c1"># on y colle le header</span>
+
+        <span class="c1"># pour chaque source</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">f_res</span><span class="p">:</span>
+            <span class="c1"># r[0] est le titre (on en fait un lien anonyme avec __)</span>
+            <span class="c1"># et on ajoute &quot;par Auteur&quot;</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;`&#39;</span><span class="o">+</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;`__ par &#39;</span><span class="o">+</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="c1"># on trace une ligne de --- à la bonne longueur en dessous</span>
+            <span class="c1"># pour en faire un titre en reStructuredText</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="p">(</span><span class="mi">9</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="c1"># on laisse passer deux lignes et on ajoute la cible du lien</span>
+            <span class="c1"># anonyme de tout à l&#39;heure</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;__ &#39;</span><span class="o">+</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+<p>Voilà pour la partie affichage.</p>
+<p>Maintenant on se colle à la fonction <tt class="docutils literal">main()</tt> qui fait tout le boulot de récupération groupée.</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">glob</span> <span class="kn">import</span> <span class="n">glob</span>
+
+<span class="c1"># ...</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="c1"># récupère la liste des scripts sources</span>
+    <span class="c1"># et lance la fonction fetch()</span>
+    <span class="c1"># puis met en forme</span>
+
+    <span class="c1"># liste qu&#39;il faut remplir</span>
+    <span class="n">fetch_results</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1">#  pour chaque .py du dossier sources/</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">glob</span><span class="p">(</span><span class="s1">&#39;sources/*.py&#39;</span><span class="p">):</span>
+
+        <span class="c1"># sauf si c&#39;est le __init__.py</span>
+        <span class="k">if</span> <span class="n">i</span><span class="o">!=</span><span class="s1">&#39;sources/__init__.py&#39;</span><span class="p">:</span>
+
+            <span class="c1"># on remplace le / par un . et on vire le .py ensuite</span>
+            <span class="c1"># on utilise alors __import__ pour importer le module choisi</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="s1">&#39;.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.py&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span>
+
+            <span class="c1"># un peu tricky, le module lui même est stocké dans l&#39;objet a, en face</span>
+            <span class="c1"># d&#39;une clé qui porte le nom du module sans &#39;sources/&#39; et &#39;.py&#39;</span>
+            <span class="c1"># on le récupère avec __getattribute__ et on appelle directement .fetch()</span>
+            <span class="c1"># on concatène alors la liste retournée avec les résultats précédents</span>
+            <span class="n">fetch_results</span> <span class="o">+=</span> <span class="n">a</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;sources/&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.py&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">fetch</span><span class="p">()</span>
+
+    <span class="c1"># un petit coup d&#39;output</span>
+    <span class="n">output</span><span class="p">(</span><span class="n">fetch_results</span><span class="p">)</span>
+
+<span class="c1"># pour lancer main() si le module est éxécuté directement</span>
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">()</span>
+</pre></div>
+<p>Donc voilà. J'aimerais vous dire : regardez, c'est super simple, mais ce serait mentir.</p>
+<p>C'est pas <em>très</em> compliqué, mais ce bout du code utilise des fonctions <em>bas niveau</em> de Python. D'abord la primitive
+<tt class="docutils literal">__import__</tt>, qui permet l'import d'un module et qui renvoie un objet référençant les modules importés. Ensuite le
+<tt class="docutils literal">__getattribute__</tt> qui est un moyen de récupèrer un attribut d'un objet quel qu'il soit. Cette fonction est quasiment
+toujours définie mais n'est pas vraiment faite pour être utilisée en direct.</p>
+<p>Si on met tout ensemble (sans les commentaires ajoutés) :</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">glob</span> <span class="kn">import</span> <span class="n">glob</span>
+
+<span class="n">OUTPUT_FILE</span> <span class="o">=</span> <span class="s1">&#39;../planet.rst&#39;</span>
+
+<span class="n">HEADER</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Planet</span>
+<span class="s2">======</span>
+
+<span class="s2">Voilà ceux qui parlent de nous sur leurs blogs</span>
+
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="k">def</span> <span class="nf">output</span><span class="p">(</span><span class="n">f_res</span><span class="p">):</span>
+    <span class="c1"># f_res : fetch results</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">OUTPUT_FILE</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out</span><span class="p">:</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">HEADER</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">f_res</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;`&#39;</span><span class="o">+</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;`__ par &#39;</span><span class="o">+</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="p">(</span><span class="mi">9</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;__ &#39;</span><span class="o">+</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="c1"># récupère la liste des scripts sources</span>
+    <span class="c1"># et lance la fonction fetch()</span>
+    <span class="c1"># puis met en forme</span>
+
+    <span class="n">fetch_results</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">glob</span><span class="p">(</span><span class="s1">&#39;sources/*.py&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span><span class="o">!=</span><span class="s1">&#39;sources/__init__.py&#39;</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="s1">&#39;.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.py&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span>
+            <span class="n">fetch_results</span> <span class="o">+=</span> <span class="n">a</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;sources/&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.py&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">fetch</span><span class="p">()</span>
+
+    <span class="n">output</span><span class="p">(</span><span class="n">fetch_results</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">()</span>
+</pre></div>
+<p>Et si vous comptez les lignes (sans les lignes blanches), vous arrivez à <strong>28 lignes</strong> !
+Et pour vous prouver que ça marche : <a class="reference external" href="http://haum.org/planet.html">http://haum.org/planet.html</a></p>
+</div>
+<div class="section" id="qu-est-ce-que-ca-a-de-si-cool">
+<h2>Qu'est ce que ça a de si cool ?</h2>
+<p>D'abord c'est minimaliste et rien qu'en soi, c'est cool.</p>
+<p>Ensuite, l'ajout d'une nouvelle source est simpliste, et le script général est court et pas trop alambiqué.
+Le fait de pouvoir ajouter plein de sources quelque soit leur format est plutôt cool et c'est pas faisable sur tous les
+&quot;gros&quot; planets.</p>
+<p>Enfin, la charge sur le serveur est nulle en dehors du moment où le script est lancé.</p>
+</div>
+<div class="section" id="automatisation">
+<h2>Automatisation</h2>
+<p>Finalement, pour que la mise à jour soit quasi automatique, on a ajouté le lancement du script dans le <em>hook</em> git de
+<em>post-merge</em>. A chaque <tt class="docutils literal">git pull</tt> sur le serveur le planet est mis à jour. On peut aussi le mettre à jour &quot;manuellement&quot; via le
+<a class="reference external" href="http://irc.lc/freenode/haum/blogreader&#64;&#64;">chan IRC</a> et un bot (le même qui permet de mettre à jour le site).</p>
+<p>Et voilà pour un bout de code pas long mais bien utile :)</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

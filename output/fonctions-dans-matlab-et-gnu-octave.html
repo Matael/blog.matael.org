@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="octave" />
+		<meta name="tags" content="fac" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Fonctions dans MATLab et GNU Octave</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:28:42+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/octave.html">octave</a></li>
+				<li><a href="/tag/fac.html">fac</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>.</p>
+<blockquote>
+Tout d'abord, sachez que MATLab est une marque déposée de Mathworks. Ensuite, sachez que dans la suite, Octave sera
+mis pour GNU/Octave. Enfin, sachez que n'en déplaise à certains pour la majorité des tâches courante Octave fait très
+bien son affaire et que pour le reste (calcul formel et compagnie), la logique veut qu'on choisisse un outil plus
+adapté. Un seul logiciel qui remplit plein de fonctions ne mérite pas d'attention : mieux vaut plein de logiciels
+qui ne font qu'une chose mais qui la font bien. Le libriste a parlé.</blockquote>
+<p>Voilà un article assez court pour parler des fonctions dans Matlab et Octave. Il y aura (bien sûr) du code et les
+différences entre les deux logiciels seront notées si elles existent.</p>
+<div class="section" id="difference-principale-le-paradigme-du-fichier-fonction">
+<h2>Différence principale : le paradigme du fichier-fonction</h2>
+<p>C'est bien là une énorme (et bien gênante) différence entre Matlab et Octave. Dans le logiciel commercial, les
+fonctions doivent être écrites dans un fichier nommé comme la fonction et qui n'en contiendra qu'une.</p>
+<p>Sous Octave, pour que les fonctions puissent être utilisés dans plusieurs scripts, il faudra aussi qu'elles soient écrites
+seules dans un fichier qui porte leur nom, toutefois, pour des fonctions internes aux scripts, il est possible de les
+écrire dans le fichier directement. Ce script compilera sous Octave et affichera la liste des nombres de 1 à 11:</p>
+<div class="highlight"><pre><span></span><span class="n">clear</span> <span class="n">all</span><span class="p">;</span>
+<span class="n">close</span> <span class="n">all</span><span class="p">;</span>
+
+<span class="k">function</span><span class="w"> </span>res <span class="p">=</span><span class="w"> </span><span class="nf">plus_un</span><span class="p">(</span>x<span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="n">res</span> <span class="p">=</span> <span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span>
+<span class="k">end</span>
+
+<span class="k">for</span> <span class="nb">i</span><span class="p">=</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span>
+    <span class="nb">disp</span><span class="p">(</span><span class="n">plus_un</span><span class="p">(</span><span class="nb">i</span><span class="p">));</span>
+<span class="k">end</span>
+</pre></div>
+<p>Par extension, dans Octave il est possible de définir des fonctions dans le prompt (la fenêtre de commande) mais pas
+dans Matlab.</p>
+<div class="section" id="probleme-de-ce-paradigme">
+<h3>Problème de ce paradigme</h3>
+<p>Si à première vue, il est plutôt bénéfique de forcer la création d'un fichier par fonction, il faut savoir que ça a
+tendance à déplaire aux programmeurs.</p>
+<p>En effet, certains scripts sont plus simples si certaines parties sont déportées en fonctions. Les fonctions ainsi créées
+peuvent êtres utiles au script qui les définit mais ne servir à rien ailleurs : il n'y a alors aucune raison de leur dédier
+un fichier complet et elles aurait leur place au plus près du code les utilisant.</p>
+</div>
+</div>
+<div class="section" id="syntaxe-d-un-fichier-fonction">
+<h2>Syntaxe d'un fichier-fonction</h2>
+<p>La syntaxe d'une fonction est la même dans Matlab et Octave</p>
+<pre class="literal-block">
+function [&lt;valeurs de retour&gt;] = &lt;nom de la fonction&gt;(&lt;liste d'arguments&gt;)
+    % &lt;docstring en commentaire&gt;
+
+    &lt;corps où chacune des valeurs de retour est définie au moins une fois&gt;
+
+end
+</pre>
+<p>Vous noterez l'absence de <tt class="docutils literal">return</tt>, en effet, c'est la valeur que contient la variable qui est retournée.
+Vous remarquerez aussi que les valeurs de retour sont dans un tableau : c'est le moyen de renvoyer
+plusieurs valeur en fin de fonction.</p>
+<p>Les arguments sont par défaut tous optionnels : la fonction <tt class="docutils literal">nargin()</tt> à l'intérieur d'une fonction permet de savoir
+combien ont été passés lors de l'appel et donc d'adapter le comportement au besoin (d'autres méthodes existent).</p>
+<p>La doctring, elle, permet de documenter l'effet de la fonction.</p>
+<p>Enfin, sachez que quasiment tout est optionnel dans cette syntaxe. Ces fonctions sont valides (du moins dans octave) :</p>
+<div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">say_yop</span>
+    <span class="nb">disp</span><span class="p">(</span><span class="s">&#39;yop&#39;</span><span class="p">);</span>
+<span class="k">end</span>
+
+<span class="n">fonction</span> <span class="n">say_num</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+    <span class="nb">disp</span><span class="p">(</span><span class="n">num1str</span><span class="p">(</span><span class="n">num</span><span class="p">));</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<div class="section" id="passage-de-fonction-en-argument">
+<h2>Passage de fonction en argument</h2>
+<p>Il est possible de passer des fonctions en tant qu'arguments d'autres fonctions.
+Par exemple, je définis le fichier <tt class="docutils literal">plot_func.m</tt> :</p>
+<div class="highlight"><pre><span></span><span class="k">function</span><span class="w"> </span><span class="nf">plot_func</span><span class="p">(</span>f, interval<span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="c">% f est une fonction</span>
+    <span class="c">% interval un tableau [x0, x1]</span>
+
+    <span class="n">x</span> <span class="p">=</span> <span class="p">(</span><span class="n">interval</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span><span class="mf">0.05</span><span class="p">:</span><span class="n">interval</span><span class="p">(</span><span class="mi">2</span><span class="p">));</span>
+    <span class="n">y</span> <span class="p">=</span> <span class="nb">zeros</span><span class="p">(</span><span class="nb">length</span><span class="p">(</span><span class="n">x</span><span class="p">));</span>
+    <span class="k">for</span> <span class="nb">i</span><span class="p">=(</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">y</span><span class="p">(</span><span class="nb">i</span><span class="p">)</span> <span class="p">=</span> <span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">(</span><span class="nb">i</span><span class="p">));</span>
+    <span class="k">end</span>
+
+    <span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+<p>(Oui, elle fonctionne).</p>
+<p>Dans un second fichier (disons <tt class="docutils literal">ma_fonc.m</tt>) :</p>
+<div class="highlight"><pre><span></span><span class="k">function</span><span class="w"> </span>y <span class="p">=</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span>x<span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="n">y</span> <span class="p">=</span> <span class="n">x</span>^<span class="mi">3</span><span class="o">+</span><span class="n">x</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+<span class="k">end</span>
+</pre></div>
+<p>Et taper ce qui suit dans le prompt affichera la courbe <span class="formula"><i>y</i> = <i>x</i><sup>3</sup> + <i>x</i> − 1, ∀<i>x</i> ∈ [0, 1]</span> :</p>
+<div class="highlight"><pre><span></span><span class="n">plot_func</span><span class="p">(@</span><span class="n">ma_fonc</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]);</span>
+</pre></div>
+<p>Vous noterez (et c'est là tout l'objet de cette section) l'ajout d'un <tt class="docutils literal">&#64;</tt> devant le nom de la fonction à passer en
+paramètre. Si <tt class="docutils literal">ma_fonc</tt> est une fonction, <tt class="docutils literal">&#64;ma_fonc</tt> est un <em>function handle</em> : un objet qui représente une
+fonction et qui peut être appellé comme une fonction.</p>
+</div>
+<div class="section" id="fonctions-anonymes-la-ou-commence-le-lol">
+<h2>Fonctions anonymes : là où commence le lol</h2>
+<p>Les développeurs de Matlab ne sont pas complètement fous et ont ajouté une fonction intéressante (bien évidement
+présente dans Octave) : les <strong>fonctions anonymes</strong>.</p>
+<p>Regardez ce code :</p>
+<div class="highlight"><pre><span></span><span class="n">f</span> <span class="p">=</span> <span class="p">@(</span><span class="n">x</span><span class="p">)</span> <span class="n">x</span>^<span class="mi">3</span><span class="o">+</span><span class="n">x</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+
+<span class="n">f</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c">% 9</span>
+</pre></div>
+<p>Cet objet bizarre <strong>est</strong> une fonction. Et il ressemble étonnamment à sa notation mathématique : <span class="formula"><i>f</i> : <i>x</i>↦<i>x</i><sup>3</sup> + <i>x</i> − 1</span>.</p>
+<p>La syntaxe est simple</p>
+<pre class="literal-block">
+&lt;nom&gt; = &#64;(&lt;arg list&gt;) &lt;valeur de retour&gt;
+</pre>
+<p>On peut donc créer à la volée ces fonctions anonymes (on parle de fonctions <em>lambda</em> aussi) et ce dans le prompt ou dans
+un fichier dans Matlab et Octave.</p>
+<p>Bien sûr, si ça marche pour un ça marche pour deux arguments :</p>
+<div class="highlight"><pre><span></span><span class="n">addition</span> <span class="p">=</span> <span class="p">@(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="n">x</span><span class="o">+</span><span class="n">y</span><span class="p">;</span>
+
+<span class="n">addition</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span> <span class="c">% 3</span>
+</pre></div>
+<p>Cool non ?</p>
+<p>Bien sûr, on peut aussi passer des fonctions :</p>
+<div class="highlight"><pre><span></span><span class="n">h</span> <span class="p">=</span> <span class="mf">0.0001</span><span class="p">;</span> <span class="c">% c&#39;est arbitraire</span>
+
+<span class="n">f</span> <span class="p">=</span> <span class="p">@(</span><span class="n">x</span><span class="p">)</span> <span class="n">x</span>^<span class="mi">3</span><span class="o">+</span><span class="n">x</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+<span class="n">diff</span> <span class="p">=</span> <span class="p">@(</span><span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="n">h</span><span class="p">)</span><span class="o">-</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">/</span><span class="n">h</span><span class="p">;</span> <span class="c">% une définition un peu crade de la dérivée</span>
+</pre></div>
+<p>A noter : pour passer une fonction anonyme en paramètre à une fonction il n'y a <strong>pas besoin de mettre un ``&#64;``</strong>.</p>
+<blockquote>
+<em>Explication (un peu technique) :</em>
+Lorsque l'on ajoute un <tt class="docutils literal">&#64;</tt> devant un nom de fonction, on crée un <em>function-handle</em> ou plus précisément une
+référence vers cette fonction (un peu comme un pointeur). Cette référence est automatiquement déréférencée par
+l'utilisation de parenthèse ce qui fait qu'appeller la référence comme une fonction revient à appeler la fonction.
+Quand on crée une fonction anonyme, on doit l'associer à une variable en faite, dans <tt class="docutils literal">f = &#64;(x) <span class="pre">x^3+x-1</span></tt> il y a
+deux choses : la création d'une fonction (<tt class="docutils literal">&#64;(x) <span class="pre">x^3+x-1</span></tt>) et la création d'une référence pointant vers cette
+fonction d'une part et l'affectation de cette référence à la variable <tt class="docutils literal">f</tt> d'autre part.</blockquote>
+<div class="section" id="exemple-1-derivee">
+<h3>Exemple 1 : Dérivée</h3>
+<p>Ci-dessus, <tt class="docutils literal">diff(f,x0)</tt> calcule une approximation du nombre dérivé de <span class="formula"><i>f</i></span> en <span class="formula"><i>x</i><sub>0</sub></span>.
+La définition propre d'une dérivé est la suivante :</p>
+<div class="formula">
+<i>f</i>’(<i>x</i>) = <span class="limits"><sup class="limit"> </sup><span class="limit">lim</span><sub class="limit"><i>h</i> → 0</sub></span><span class="fraction"><span class="ignored">(</span><span class="numerator"><i>f</i>(<i>x</i> + <i>h</i>) − <i>f</i>(<i>x</i>)</span><span class="ignored">)/(</span><span class="denominator"><i>h</i></span><span class="ignored">)</span></span>
+</div>
+<p>On peut l'approximer ainsi (pour <span class="formula">|Δ<i>x</i>| &lt;  &lt; 1</span>) :</p>
+<div class="formula">
+<i>f</i>’(<i>x</i>) = <span class="fraction"><span class="ignored">(</span><span class="numerator"><i>f</i>(<i>x</i> + Δ<i>x</i>) − <i>f</i>(<i>x</i>)</span><span class="ignored">)/(</span><span class="denominator">Δ<i>x</i></span><span class="ignored">)</span></span>
+</div>
+<p>On a alors la possibilité d'écrire une fonction qui renvoie la fonction dérivée de toute fonction passée en paramètre :</p>
+<div class="highlight"><pre><span></span><span class="n">h</span> <span class="p">=</span> <span class="mf">0.0001</span><span class="p">;</span> <span class="c">% c&#39;est arbitraire</span>
+<span class="n">derive</span> <span class="p">=</span> <span class="p">@(</span><span class="n">f</span><span class="p">)</span> <span class="p">(</span> <span class="p">@(</span><span class="n">x</span><span class="p">)</span> <span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="n">h</span><span class="p">)</span><span class="o">-</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">/</span><span class="n">h</span> <span class="p">)</span>
+</pre></div>
+<p>Et pour l'appel :</p>
+<div class="highlight"><pre><span></span><span class="n">f</span> <span class="p">=</span> <span class="p">@(</span><span class="n">x</span><span class="p">)</span> <span class="n">x</span>^<span class="mi">3</span><span class="o">+</span><span class="n">x</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+<span class="n">f2</span> <span class="p">=</span> <span class="n">derive</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
+</pre></div>
+<p>La fonction <tt class="docutils literal">derive</tt> pourrait être exprimée ainsi :</p>
+<div class="formula">
+<i>derive</i> : <i>f</i>↦<i>f</i>’
+</div>
+<p>C'est donc une fonction qui prend en paramètre une fonction et qui renvoie une fonction. Je vous avais prévenu, c'est
+puissant.</p>
+</div>
+<div class="section" id="exemple-2-partial">
+<h3>Exemple 2 : partial()</h3>
+<p>Certains langages disposent de la fonction <tt class="docutils literal">partial</tt> qui prend une fonction de plusieurs variables et une liste
+d'arguments à fixer et qui renvoie une fonction de une ou plusieurs variables (mais moins qu'avant) en ayant fixé une
+partie des arguments. Par exemple, pour une fonction de 2 variables :</p>
+<div class="formula">
+<i>partial</i> : <i>f</i>(<i>x</i>, <i>y</i>), (<i>x</i> = <i>a</i>)↦<i>f</i>(<i>x</i> = <i>a</i>, <i>y</i>)
+</div>
+<p>Ce genre de fonction n'existe pas dans Matlab ou Octave de base, mais on peut les écrire facilement :</p>
+<div class="highlight"><pre><span></span><span class="n">f</span> <span class="p">=</span> <span class="p">@(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="n">x</span><span class="o">+</span><span class="n">y</span><span class="p">;</span>
+<span class="n">partial</span> <span class="p">=</span> <span class="p">@(</span><span class="n">f</span><span class="p">,</span><span class="n">a</span><span class="p">)</span> <span class="p">(</span> <span class="p">@(</span><span class="n">y</span><span class="p">)</span> <span class="n">f</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">y</span><span class="p">));</span>
+
+<span class="n">plus_un</span> <span class="p">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+</pre></div>
+<p>On commence par créer une fonction de x et y qui calcule x+y. On définit ensuite une fonction <tt class="docutils literal">partial</tt> qui a f et a
+associe une fonction <span class="formula"><i>y</i>↦<i>f</i>(<i>a</i>, <i>y</i>)</span>. Enfin, on utilise <tt class="docutils literal">partial</tt> et <tt class="docutils literal">f</tt> pour écrire la fonction
+<tt class="docutils literal">plus_un</tt> qui ajoute 1 a un nombre passé en paramètre (dans le jargon des langages de programmation, cela s'appelle du
+<em>currying</em>).</p>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>Même si la syntaxe est pas forcément très agréable, les fonctions dans Matlab et Octave sont relativement puissantes.</p>
+<p>L'utilisation de fonctions anonymes permet de rendre le code plus lisible et plus facilement réutilisable. De plus avec
+un peu d'habitude, ce genre de programmation est plus simple et beaucoup plus rapide à mettre en œuvre.</p>
+<p>Enfin, ces fonctions anonymes permettent de combler certains manques du langage (currying, closures, décorateurs, etc...)
+et rendent la programmation sous Matlab et octave légèrement plus agréable (ça ne vaut toujours pas un C, un Python ou
+un Haskell, mais c'est mieux que rien :)).</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

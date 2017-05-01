@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="legacy" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Mon Ami toto</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:20:57+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/legacy.html">legacy</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Laissez moi vous présenter <strong>toto</strong>. Il s'agit d'un moteur de blog
+minimaliste écrit en <strong>Ruby</strong> et développé par
+<a class="reference external" href="http://cloudhead.io">cloudhead</a>. J'ai découvert
+<a class="reference external" href="http://cloudhead.io/toto">toto</a> grâce à un ami qui en a parlé un
+jour sur IRC. L'idée d'un moteur de blog aussi minimaliste m'a plu et je
+me suis dit que j'allais l'essayer.</p>
+<div class="section" id="si-minimaliste-que">
+<h2>Si minimaliste que...</h2>
+<p>... <strong>il tient en 300 sloc</strong> !! Toto utilise en fait le gestionaire
+de version bien connu <a class="reference external" href="http://git-scm.com">git</a> et
+<a class="reference external" href="http://daringfireball.net/projects/markdown/">Markdown</a> pour la
+gestion des articles. Autant vous dire que il y a de quoi être content !
+Dans ce <em>&quot;moteur de blog&quot;</em> enfin si l'on peut dire, pas de place pour
+les fioritures et c'est tant mieux ! En fait, ça rentre exactement dans
+ma manière de penser : <strong>en faire peu, mais bien le faire</strong> !</p>
+</div>
+<div class="section" id="mais-pourquoi-lui">
+<h2>Mais, pourquoi lui ??</h2>
+<p>Je n'ai jamais ouvert (ou bien fait vivre plus de 2 jours) un blog pour
+la simple raison que j'ai <strong>horeur</strong> des interfaces de Wordpress et ses
+copains. Je les trouve compliquées et anti-intuitives, surtout quand on
+ne cherche qu'a partager à la volée des idées ou des articles. En plus,
+ça m'embètait de devoir ouvrir un navigateur web pour poster...
+<em>(flemmard inside)</em>. <strong>Toto</strong> est donc devenu d'un coup le candidat
+idéal :</p>
+<ul class="simple">
+<li>Pas d'interface d'admin compliquée : simplement une arborescence de
+fichiers (et un <tt class="docutils literal">config.ru</tt> à remplir comme il faut)</li>
+<li>Pas besoin de passer par HTTP pour poster : on commit sur le dépot
+git</li>
+<li>Pas besoin de d'apprendre de nouveau outil : j'utilisais déjà
+<a class="reference external" href="http://git-scm.com">git</a>, <a class="reference external" href="http://www.vim.org/">vim</a> et <a class="reference external" href="http://daringfireball.net/projects/markdown/">Markdown</a> !</li>
+</ul>
+</div>
+<div class="section" id="deploiement">
+<h2>Déploiement</h2>
+<p>Observons un peu plus ce que cache notre ami ! Nous l'avons dit plus
+haut, <a class="reference external" href="http://cloudhead.io/toto">toto</a> est écrit en <a class="reference external" href="http://ruby-lang.org">Ruby</a>, il utilise <strong>Rails</strong> et
+<strong>Rack</strong>. Pour ce qui est de l'installation de la bestiole, <strong>Toto</strong> se
+comporte comme n'importe qu'elle gemme ruby, et peut donc s'installer
+avec la commande :</p>
+<div class="highlight"><pre><span></span>gem install toto
+</pre></div>
+<p>Ruby connait désormais <strong>toto</strong> mais on va avoir besoin de templates...
+Pour cela, clouhead met à disposition <a class="reference external" href="https://github.com/cloudhead/dorothy">dorothy</a>, un set de templates
+de base pour <strong>toto</strong>. Dorothy est en fait un dépot git qu'il suffit de
+cloner à l'endroit voulu :</p>
+<div class="highlight"><pre><span></span><span class="nb">cd</span> la/ou/on/veut
+git clone git://github.com/cloudhead/dorothy.git monblog
+</pre></div>
+<p>Chez moi, <strong>toto</strong> est géré dans un <strong>vhost apache</strong> et répond au
+sous-domaine <em>http://blog.matael.org</em> : Voici une copie du fichier de
+conf du vhost :</p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;VirtualHost</span> <span class="s">*:80</span><span class="nt">&gt;</span>
+    <span class="nb">ServerAdmin</span> webmaster@localhost
+    <span class="nb">ServerName</span> blog.matael.org
+    <span class="nb">ServerAlias</span> blog
+    <span class="nb">DocumentRoot</span> <span class="sx">/path/to/toto/public</span>
+
+    <span class="nt">&lt;Directory</span> <span class="s">/path/to/toto</span><span class="nt">&gt;</span> <span class="c"># Attention : pas de slash de fin</span>
+        <span class="nb">Allow</span> from <span class="k">All</span>
+        <span class="nb">Options</span> -Multiviews
+    <span class="nt">&lt;/Directory&gt;</span>
+
+    <span class="nb">ErrorLog</span> ${APACHE_LOG_DIR}/error.log
+    <span class="nb">LogLevel</span> <span class="k">warn</span>
+    <span class="nb">CustomLog</span> ${APACHE_LOG_DIR}/access.log combined
+<span class="nt">&lt;/VirtualHost&gt;</span>
+</pre></div>
+<p>Il faut juste bien veiller à faire pointer <em>DocumentRoot</em> sur le
+<strong>répertoire ``public`` de toto</strong>.</p>
+<p>Cloudhead propose aussi une <strong>installation en 10s</strong> au sein d'<strong>heroku</strong>
+:</p>
+<div class="highlight"><pre><span></span>git clone git://github.com/cloudhead/dorothy.git myblog
+<span class="nb">cd</span> myblog
+heroku create myblog
+git push heroku master
+</pre></div>
+<p>je n'ai pas utilisé (ni testé d'ailleurs) cette méthode, en effet je
+suis pas un énorme utilisateur de Ruby et encore moins de Rails...</p>
+</div>
+<div class="section" id="je-veux-ecrire">
+<h2>Je veux écrire !!</h2>
+<p>Voilà enfin ce qui m'a le plus plut : écrire des articles est simple !
+On crée un fichier dont le nom est correctement formaté dans le
+répertoire <tt class="docutils literal">articles/</tt> de <strong>dorothy</strong>. La syntaxe attendue pour les
+noms de fichiers est : année-mois-jour-titre</p>
+<p>avec des tirets à la place des espaces pour le titre. Pour l'exemple
+voici le nom de fichier de cet article : 2011-07-04-mon-ami-toto.mkd Par
+défaut, <strong>toto</strong> attend des articles en <tt class="docutils literal">.txt</tt> mais cette
+configuration peut être modifiée dans le <tt class="docutils literal">config.ru</tt>.</p>
+<p>Pour ce qui est des fichiers-articles, voici leur formatage normal :</p>
+<div class="highlight"><pre><span></span>title:titre de l&#39;article
+author:Nom Auteur
+date:25/05/2042
+
+Article.....
+.............
+</pre></div>
+<p>Rien de bien sorcier donc !</p>
+<p>Comments</p>
+<p>Effectivement, tout blog se doit d'implémenter une possibilité de
+commentaire. Ici, c'est <strong>disqus</strong> qui remplit cet usage. La création de
+compte est rapide et gratuite ainsi que l'ajout d'un blog. On récupère
+ensuite <strong>l'id du blog nouvellement créé</strong> et on le met là où il faut
+dans le <tt class="docutils literal">config.ru</tt>.</p>
+<p>A propos de <tt class="docutils literal">config.ru</tt>, voici le mien :</p>
+<div class="highlight"><pre><span></span><span class="nb">require</span> <span class="s1">&#39;toto&#39;</span>
+
+<span class="c1"># Rack config</span>
+<span class="n">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Static</span><span class="p">,</span> <span class="ss">:urls</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="s1">&#39;/css&#39;</span><span class="p">,</span> <span class="s1">&#39;/js&#39;</span><span class="p">,</span> <span class="s1">&#39;/images&#39;</span><span class="p">,</span> <span class="s1">&#39;/favicon.ico&#39;</span><span class="o">]</span><span class="p">,</span> <span class="ss">:root</span> <span class="o">=&gt;</span> <span class="s1">&#39;public&#39;</span>
+<span class="n">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">CommonLogger</span>
+
+<span class="k">if</span> <span class="no">ENV</span><span class="o">[</span><span class="s1">&#39;RACK_ENV&#39;</span><span class="o">]</span> <span class="o">==</span> <span class="s1">&#39;development&#39;</span>
+  <span class="n">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">ShowExceptions</span>
+<span class="k">end</span>
+
+<span class="c1">#</span>
+<span class="c1"># Create and configure a toto instance</span>
+<span class="c1">#</span>
+<span class="n">toto</span> <span class="o">=</span> <span class="no">Toto</span><span class="o">::</span><span class="no">Server</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span>
+  <span class="c1">#</span>
+  <span class="c1"># Add your settings here</span>
+  <span class="c1"># set [:setting], [value]</span>
+  <span class="c1">#</span>
+  <span class="n">set</span> <span class="ss">:author</span><span class="p">,</span>     <span class="s2">&quot;Mathieu (matael) Gaborit&quot;</span>                <span class="c1"># blog author</span>
+  <span class="n">set</span> <span class="ss">:title</span><span class="p">,</span>      <span class="s2">&quot;Matael...&quot;</span>                               <span class="c1"># site title</span>
+  <span class="c1"># set :root,     &quot;index&quot;                                   # page to load on /</span>
+  <span class="n">set</span> <span class="ss">:date</span><span class="p">,</span>       <span class="nb">lambda</span> <span class="p">{</span><span class="o">|</span><span class="n">now</span><span class="o">|</span> <span class="n">now</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%d/%m/%Y&quot;</span><span class="p">)</span> <span class="p">}</span>  <span class="c1"># date format for articles</span>
+  <span class="c1"># set :markdown, :smart                                    # use markdown + smart-mode</span>
+  <span class="n">set</span> <span class="ss">:disqus</span><span class="p">,</span>     <span class="s1">&#39;matael&#39;</span>                                  <span class="c1"># disqus id, or false</span>
+  <span class="c1"># set :summary,  :max =&gt; 150, :delim =&gt; /~/                # length of article summary and delimiter</span>
+  <span class="n">set</span> <span class="ss">:ext</span><span class="p">,</span>        <span class="s1">&#39;mkd&#39;</span>                                     <span class="c1"># file extension for articles</span>
+  <span class="c1"># set :cache,    28800                                     # cache duration, in seconds</span>
+
+  <span class="c1">#set :date, lambda {|now| now.strftime(&quot;%B #{now.day.ordinal} %Y&quot;) }</span>
+<span class="k">end</span>
+
+<span class="n">run</span> <span class="n">toto</span>
+</pre></div>
+<p>Merci à <strong>cloudhead</strong> d'avoir développé cette application et bonne
+chance à tous ceux qui souhaiteraient se lancer avec !!</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

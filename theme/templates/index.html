@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<section id=articles-list>
+{% for article in articles_page.object_list %}
+	<div class=article-item>
+		<div class=left-col>
+			<h1><a href="{{ SITEURL }}/{{ article.url }}" rel="bookmark" title="Permalink to {{ article.title|striptags }}">{{ article.title }}</a></h1>
+			<p class=summary>{{ article.summary }}</p>
+			<p class=by-line>Published on <time class=date datetime="{{ article.date.isoformat() }}">{{ article.locale_date }}</span> by
+				{% for author in article.authors %}
+					{% if loop.last %}{% if not loop.first %} and {% endif %}{% else %}{% if not loop.first %}, {% endif %}{% endif %}
+					<a href="{{ SITEURL }}/{{ author.url }}" class=author>{{ author }}</a>
+				{% endfor %}
+			</p>
+		</div>
+		<div class=right-col>
+			<ul class=tags>
+				{% for t in article.tags %}
+					<li><a href="{{ SITEURL }}/{{ t.url }}">{{t}}</a></li>
+				{% endfor %}
+			</ul>
+		</div>
+		<div class=clear>&nbsp;</div>
+	</div>
+{% endfor %}
+</section>
+{% if articles_page.has_other_pages() %}
+	{% include 'pagination.html' %}
+{% endif %}
+{% endblock content %}

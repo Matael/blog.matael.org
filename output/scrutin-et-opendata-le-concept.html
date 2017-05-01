@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="haum" />
+		<meta name="tags" content="LeMans" />
+		<meta name="tags" content="opendata" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Scrutin et OpenData : Le concept...</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:28:43+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/haum.html">haum</a></li>
+				<li><a href="/tag/lemans.html">LeMans</a></li>
+				<li><a href="/tag/opendata.html">opendata</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Côté Opendata, il y a des discussions, des réunions, etc... et il y a ceux qui mettent les mains dedans. Voilà un autre retour d'expérience sur l'opendata au Mans.</p>
+<blockquote>
+Ce post fait suite à <a class="reference external" href="/writing/scrutin-et-opendata-parlons-technique/">celui-ci</a> qui détaille la création d'une <a class="reference external" href="http://umap.openstreetmap.fr/fr/map/le-mans-elections_6485">carte de visualisation</a> des résultats du dernier scrutin municipal.</blockquote>
+<p>Comme la dernière fois avec l'exploitation des données de la <a class="reference external" href="/writing/cyber-ouvre-boite-le-concept/">SETRAM</a> (le réseau de bus et trams du Mans), je vais revenir sur la carte des résultats du
+scrutin, non pas de manière technique (c'est déjà <a class="reference external" href="/writing/scrutin-et-opendata-parlons-technique/">fait ici</a>), mais plus pour expliquer pourquoi on s'est donné tout ce
+mal.</p>
+<p>Avant d'aller plus loin, il faut mettre quelques petites choses au clair. Le <a class="reference external" href="http://haum.org">HAUM</a> est un hackerspace. Son objectif
+ultime est de détourner les objets de leur fonction première, d'explorer les possibles et de secouer les idées. Le HAUM
+peut être perçu comme un générateur d'actions subversives, mais son but n'est pas là (du moins pas totalement). Comme
+une bonne partie des hackerspaces français, le HAUM s'intéresse à la dimension humaine et citoyenne de l'OpenData. Alors, si
+je passe du temps à écrire 2 articles (alors que le technique à lui seul suffirait à la ligne de ce blog), il y a une
+raison : je cherche par là à montrer à ceux qui peuvent changer les choses, que l'opendata a une utilité et qu'il s'agit
+d'un vecteur de réflexion, de vie citoyenne et de richesse.</p>
+<div class="section" id="action-citoyenne">
+<h2>Action citoyenne</h2>
+<p>Voilà maintenant plusieurs années que je suis sur Le Mans, plusieurs années que l'on me dit que Le Mans veut devenir un
+pôle attractif dans le domaine numérique.</p>
+<p>La ville est bien située, pas inaccessible du point de vue immobilier, avec un bon potentiel de développement... alors
+que quelqu'un m'explique : pourquoi est-ce si difficile d'obtenir de simples données ?</p>
+<p>Je dois avouer que pour les données du dernier scrutin municipal, j'ai été très agréablement surpris. Je m'attendais à devoir
+passer un immonde PDF scanné avec les pieds à la moulinette de la reconnaissance d'écriture... Autant vous dire que
+trouver un beau XML propre (même s'il était caché) était un pur plaisir.</p>
+<p>Pour le reste, par contre... les données sont toujours au même point qu'il y a <a class="reference external" href="http://blog.matael.org/writing/opendata-au-mans/">plus de 10 mois</a>... alors que de (trop)
+nombreuses réunions sur le sujet ont eu lieu.</p>
+<p>Aujourd'hui, je ne veux plus entendre de &quot;on va se réunir&quot; ou &quot;on va constituer une commission&quot;. Si Le Mans veut
+vraiment revenir dans le mouvement OpenData, il va falloir agir et vite.</p>
+<p>Rennes est loin devant avec un <a class="reference external" href="http://data.keolis-rennes.com/">service de transport</a> aux données accessibles (sous des formats standards) et un <a class="reference external" href="http://www.data.rennes-metropole.fr/">portail</a>
+regorgeant de données potentiellement intéressantes. Elle fait d'ailleurs partie de ces villes où un <a class="reference external" href="http://www.cod-rennes.fr/">collectif
+citoyen</a> s'est créé autour de ces données.</p>
+<p>De leur côté, Nantes et <a class="reference external" href="http://data.angers.fr/">Angers</a> ne sont pas en reste, proposant elles aussi des données. La première profite d'ailleurs
+du portail <a class="reference external" href="http://data.paysdelaloire.fr/">Pays de la Loire</a>... comme quoi les solutions techniques ne semblent pas manquer.</p>
+<div class="section" id="ou-est-l-action">
+<h3>Où est l'action ?</h3>
+<p>Il y a plein de manières de faire de l'opendata, dont celles qui marchent et celles qui ne marchent pas.</p>
+<p>Pour parler principalement de la première catégorie, on peut évoquer diverses approches.</p>
+<p>La première de ces approches est de travailler de concert avec un collectif d'utilisateurs potentiels. Si ça a
+l'avantage de cerner au mieux la demande, ça a également le désavantage de faire dépendre la politique opendata locale de besoins
+particuliers, et de limiter ainsi la création.</p>
+<p>Une autre approche serait d'ouvrir au maximum, quitte à organiser de temps à autres des réunions publiques, et de
+proposer un moyen de faire remonter les éventuelles remarques. De ce côté-ci, l'ouverture est plus large, plus citoyenne, et
+encourage la créativité et la participation.</p>
+<p>L'opendata ne doit pas (plus ?) être considérée comme un vague concept ou thème de campagne, mais comme un moyen de
+rendre la ville aux citoyens qui l'habitent. Ouvrir les données c'est se placer dans une dynamique de plus grande transparence
+(il me semble que certains au gouvernement en avaient parlé, non ?). C'est aussi promouvoir une réflexion plus riche et
+plus directe autour de la vie politique et culturelle locale...</p>
+</div>
+</div>
+<div class="section" id="des-donnees-fiables-completes-et-a-jour">
+<h2>Des données fiables, complètes et à jour</h2>
+<p>Voilà une recette qui fonctionne. Une recette rarement respectée.</p>
+<p>En fait, vous pourriez ouvrir autant que vous le souhaitez, si vous ne maintenez pas vos données à jour, cela
+ne sert à rien. Quand vous annoncez une fréquence de mise à jour, tenez-la.</p>
+<p>Assurez-vous que vos données soient fiables. Partez du constat que <strong>tout</strong> sera vérifié. Que si vous mentez à vos
+utilisateurs, ils le sauront et vous en voudront.</p>
+<p>Arrêtez surtout de prendre les gens pour des imbéciles et fournissez les données les plus complètes. J'ai dit, juste
+avant, que j'avais été agréablement surpris par les données du dernier scrutin. C'est vrai à bien des égards : ces données
+semblent fiables (et je ne doute pas qu'elles le soient), elles sont complètes, tout y est et on peut facilement trouver
+chacun des aspects du scrutin. Enfin, les données ont été mises à disposition dès la fin du dépouillement, ou presque !</p>
+<p>C'est ainsi que ça doit être pour chacun des thèmes.</p>
+</div>
+<div class="section" id="travaillons-ensemble">
+<h2>Travaillons ensemble</h2>
+<p>J'entends souvent dire que l'opendata ne <em>rapporte</em> pas. Effectivement, d'un point de vue strictement financier,
+l'opendata ne rapporte pas. Toutefois, quand on cherche à s'engager sur le terrain du numérique, l'opendata est un de ces
+points qui mettent les gens de ce milieu en confiance.</p>
+<p>Une ouverture bien réalisée, c'est une vitrine qui clame haut et fort &quot;regardez, on a ouvert, on a compris votre
+problématique et on vous apporte des données que vous pouvez utiliser&quot;. C'est là qu'il faut se démarquer.
+Il existe aujourd'hui de potentiels entrepeneurs qui ne lanceront aucune start-up, ou que sais-je, avant que les données
+soient disponibles.</p>
+<p>L'exploitation et l'interprétation des données des collectivités publiques est un pan non-négligeable du gagne pain de
+certains. Ceux là sont des créateurs de richesse et dans un contexte difficile, il serait suicidaire de se priver
+d'entrepreneurs.... Vous voyez où je veux en venir.</p>
+<p>J'en peux plus de me battre pour l'ouverture. Pour nous, c'est un bouffe temps sans nom et pour vous, une perte
+substancielle. On y perd alors que nous devrions travailler ensemble à ouvrir ça de la bonne manière.</p>
+<p>Venez nous retrouver un mardi soir au HAUM (à l'ISMANS), venez discutez avec nous aux Jeudis du Libres, retroussez les
+manches, quittez vos salles de réunion et venez échanger avec ceux qui se servent de ces données.</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="arduino" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Arduino et Registres</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:20:57+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/arduino.html">arduino</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>C'est beau la programmation et l'utilisation de pins une par une. Il y a
+toutefois un problème à cette conception : lorsqu'avec un arduino on
+souhaite piloter un <strong>afficheur ou une série de LEDs</strong> (à plus forte
+raison plusieurs afficheurs ou série de LEDs), on se retrouve vite à
+cours de pins. C'est là qu'apparaisent : les <strong>registres à décalage</strong> !!</p>
+<p><strong>Note : tous les fichiers utilisés y compris les images ou les sources
+sont téléchargeables en bas de page</strong></p>
+<div class="section" id="registres-a-quoi">
+<h2>Registres à quoi ?</h2>
+<p>Un registre à décalage est un système logique permettant la
+restranscription/mémorisation des données depuis une connexion
+série/parallèle et leur restitution vers une interface série/parallèle.
+D'après wikipedia :</p>
+<blockquote>
+Un registre à décalage est un registre, c'est-à-dire un ensemble de
+bascules synchrones, dont les bascules sont reliées une à une, à
+l'exception de deux bascules qui ne sont pas forcément reliées. A
+chaque cycle d'horloge, le nombre représenté par ces bascules est
+mis à jour.</blockquote>
+<p>On peut utiliser ce type de registre pour une simple conversion
+série/parallèle en commandant l'output à grands coups de porte <tt class="docutils literal">AND</tt>
+entre les sorties et une horloge de fréquence <em>n</em> fois inférieure à
+celle de l'horloge de décalage de bit (avec <em>n</em> le nombre de bit
+stockés).</p>
+<p>Dans cette article, nous parlerons du <strong>74HC595</strong>. Un registre à
+décalage standard avec mémorisation et sortie à 3 états.</p>
+</div>
+<div class="section" id="le-74hc595">
+<h2>Le 74HC595</h2>
+<p>... se présente sous la forme d'un petit <em>IC</em> (<em>integrated circuit</em> ou
+<em>circuit intégré (CI)</em> en français) <strong>enpaqueté DIP16</strong>. Il a donc 8
+broches de chaque côté et la numérotation de celles ci se fait d'une
+manière on ne peut plus classique. Voici les fonctions des pins :</p>
+<ul class="simple">
+<li>1 à 7 : <tt class="docutils literal">Q1</tt> à <tt class="docutils literal">Q7</tt>, sorties parallèles 1 à 7</li>
+<li>8 : <tt class="docutils literal">GND</tt>, masse (<em>0V</em>)</li>
+<li>9 : <tt class="docutils literal">Q7'</tt>, sortie série</li>
+<li>10 : <tt class="docutils literal">/MR</tt>, remise à zéro (<em>master reset</em>) <strong>active au niveau bas</strong></li>
+<li>11 : <tt class="docutils literal">SH_CP</tt>, horloge de décalage (<em>shift clock</em>)</li>
+<li>12 : <tt class="docutils literal">ST_CP</tt>, stockage (<em>latch</em>)</li>
+<li>13 : <tt class="docutils literal">/OE</tt>, sortie active (<em>Output Enabled</em>) <strong>active au niveau
+bas</strong></li>
+<li>14 : <tt class="docutils literal">DS</tt>, entrée série</li>
+<li>15 : <tt class="docutils literal">Q0</tt>, sortie parallèle 0</li>
+<li>16 : <tt class="docutils literal">Vcc</tt>, alimentation (<em>+5V</em>)</li>
+</ul>
+<div class="section" id="schema-equivalent">
+<h3>Schéma équivalent</h3>
+<p><object data="/static/images/74hc595/schema.svg" style="width: 600px;" type="image/svg+xml">image0</object></p>
+</div>
+<div class="section" id="principe-de-fonctionnement-du-74hc595">
+<h3>Principe de fonctionnement du 74HC595</h3>
+<p>Malgré une datasheet obscure (mais que vous pourrez trouver dans les
+liens en bas de la page), le fonctionnement de cet IC est simplissime.
+L'alimentation du 74HC595 se fait sur la <strong>pin 16</strong> sous une tension
+allant de <strong>-0.5 à +7V</strong> (toujours d'après la datasheet). Pour ce qui
+est des Fonctions principales de la bête (à savoir registre à décalage,
+enregsitrement du registre et sortie à 3 états), on utilisera les <strong>8
+pins</strong> de sortie parallèles (<strong>1 à 7 + 15</strong>), plus les 3 à 5 pins de
+contrôle.</p>
+<p>Voici en gros la séquence effectué pour l'envoie d'une donnée sur 8bits
+en sortie du 74HC595 : on passe d'abord <tt class="docutils literal">ST_CP</tt> à 0, puis on présente
+un par un les 8 bits de la donnée sur <tt class="docutils literal">DS</tt> en envoyant en même temps
+un <strong>1 logique</strong> sur <tt class="docutils literal">SH_CP</tt> à chaque fois, on repasse ensuite
+<tt class="docutils literal">ST_CP</tt> à 1 pour recopier la nouvelle valeur dans le second registre.</p>
+<p>La <strong>pin 10</strong> (<tt class="docutils literal">/MR</tt>) permet de remettre tout le premier registre à
+zéro et <strong>est active au niveau bas</strong>, il convient donc (pour éviter une
+remise à zéro permanente du registre) de <strong>placer cette pin au niveau
+haut</strong> (on note que la plupart du temps on reliera cette pin à <tt class="docutils literal">+Vcc</tt>.</p>
+<p>La <strong>pin 13</strong> (<tt class="docutils literal">/OE</tt>) active ou non la sortie (elle est elle aussi
+<strong>active au niveau bas</strong>). On placera cette fois cette pin <strong>sur la
+masse</strong> ou bien sur une sortie du microcontrôleur pour pouvoir en
+contrôler l'état.</p>
+</div>
+<div class="section" id="a-propos-du-troisieme-etage">
+<h3>A propos du troisième étage</h3>
+<p>Comme vous avez pu le voir sur le schéma équivalent du 74HC595, il est
+composé de <strong>3 étages</strong>. Les deux premiers sont composés de <strong>bascules
+D</strong> (disposée en regsitre à décalage pour le premier et en mémoire
+parallèe pour le second), ces deux premiers étages sont donc triviaux.</p>
+<p>Le 3ème étage quant à lui est composé de <strong>sorties à 3 états</strong>
+commandées par la pin <tt class="docutils literal">/OE</tt>. Le fonctionnement des sorties à 3 états
+est simple. Pour deux des états, il s'agit des classiques <strong>0 et 1
+logiques</strong>. Dans le cas ou <tt class="docutils literal">/OE</tt> est au niveau bas, cette sortie est
+un simple fil.</p>
+<p>Par contre, dans le cas ou <tt class="docutils literal">/OE</tt> est au niveau logique haut (quand la
+sortie est désactivée), cet étage atteint un état de <strong>haute impédance</strong>
+qui n'est ni zéro, ni un (ni rien d'exploitable à ma connaissance) mais
+qui à le bénéfice d'isoler efficacement le <strong>74HC595</strong> du reste du
+circuit.</p>
+</div>
+<div class="section" id="utilite-de-la-pin-9">
+<h3>Utilité de la pin 9</h3>
+<p>La pin 9 du <strong>74HC595</strong> correspond à sa sortie série. On est en droit de
+se demander <em>mais, à quoi ça sert de rentrer en série pour... ressortir
+en série ?</em> La question vaut au moins un peu le détour : en utilisant la
+sortie série, on peut <strong>chaîner les 74HC595</strong> et avoir ainsi des
+registres à décalage sur 16, 24, 32 etc... bits. il suffit alors de
+bidouiller un truc comme ça :</p>
+<p><img alt="image1" src="/static/images/74hc595/double.png" style="width: 600px;" />
+On peut alors utiliser les <strong>Q0 à Q7</strong> du <em>CI</em> du haut pour les 8 bits
+de poids faible (si on balance les poids fort en premier, voir après) et
+ceux du second pour les 8 de poids fort. On aurait :</p>
+<ul class="simple">
+<li>en vert : <tt class="docutils literal">DS</tt></li>
+<li>en bleu : <tt class="docutils literal">ST_CP</tt></li>
+<li>en rouge : <tt class="docutils literal">SH_CP</tt></li>
+</ul>
+<p><strong>Attention, les entrées sont à droite et les sorties à gauche</strong></p>
+</div>
+</div>
+<div class="section" id="arduinisons-tout-ca">
+<h2>Arduinisons tout ça</h2>
+<p>... ou comment utiliser les registres avec l'arduino</p>
+<div class="section" id="shiftout">
+<h3>ShiftOut</h3>
+<p>Au cas où vous l'aurez pas remarqué, piloter un <strong>74HC595</strong> en dur,
+c'est un peu la mort. On peut envisager la chose comme ça:</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">byte</span> <span class="n">data</span><span class="p">;</span>
+<span class="n">digitalWrite</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
+<span class="k">for</span><span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="c1">// pour chaque bit de la donnée</span>
+<span class="p">{</span>
+    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">bitRead</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">i</span><span class="p">));</span> <span class="c1">// on présente le bit</span>
+    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">SH_CP</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span> <span class="c1">// On fait pulser la pin SH_CP</span>
+    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">SH_CP</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>  <span class="c1">// pour écrire le bit</span>
+<span class="p">}</span>
+<span class="n">digitalWrite</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span>
+</pre></div>
+<p>Attention, je n'ai pas testé ce code, mais normalement, il devrait
+permettre le transfert d'une donnée 8bit vers le <strong>74HC595</strong>.</p>
+<p>C'est un peu lourd non ? Pour palier au problème : <strong>la fonction
+``shiftOut()``</strong> ! Voilà le prototype de la bestiole (elle est définie
+dans <tt class="docutils literal">/path/to/arduino/hardware/arduino/cores/wiring_shift.c</tt>):</p>
+<div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">shiftOut</span><span class="p">(</span><span class="kt">uint8_t</span> <span class="n">dataPin</span><span class="p">,</span> <span class="kt">uint8_t</span> <span class="n">clockPin</span><span class="p">,</span> <span class="kt">uint8_t</span> <span class="n">bitOrder</span><span class="p">,</span> <span class="kt">uint8_t</span> <span class="n">val</span><span class="p">);</span>
+</pre></div>
+<p>On a donc besoin de 3 pins : <tt class="docutils literal">dataPin</tt> et <tt class="docutils literal">clockPin</tt> utilisées par
+<tt class="docutils literal">shiftOut</tt> et <tt class="docutils literal">latchPin</tt> pour bloquer ou non la recopie sur le
+second registre.</p>
+<p><strong>A propos de bitOrder</strong> :
+Cet argument peut être égal à <tt class="docutils literal">LSBFIRST</tt> ou <tt class="docutils literal">MSBFIRST</tt>. Dans le
+premier cas, <tt class="docutils literal">shiftOut</tt> enverra les bit de poids faible en premier
+alors que dans le second, elle commencera par ceux de poids fort.</p>
+<p>On pourrait réécrire l'exemple précédent avec <tt class="docutils literal">shiftOut</tt> :</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">byte</span> <span class="n">data</span><span class="p">;</span>
+<span class="n">digitalWrite</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
+<span class="n">shiftOut</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">SH_CP</span><span class="p">,</span> <span class="n">LSBFIRST</span><span class="p">,</span> <span class="n">data</span><span class="p">);</span>
+<span class="n">digitalWrite</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span>
+</pre></div>
+</div>
+<div class="section" id="application-pratique">
+<h3>Application pratique</h3>
+<p>Bon, c'est pas tout, mais on est là pour bidouiller quand même !
+Voici un petit sketch arduino pour l'utilisation de <tt class="docutils literal">shiftOut</tt> dans le
+cadre d'un petit chennillard.</p>
+<p><strong>Bonus :</strong> (ou pas) la vitesse de parcours est réglable au moyen de la
+fonction <tt class="docutils literal">analogRead</tt> et surtout d'un potentiomètre (ici du 10kOhms).</p>
+<div class="section" id="le-schema-la-breadboard">
+<h4>Le schéma | La breadboard</h4>
+<p><img alt="image2" src="/static/images/74hc595/demo_schem.png" style="width: 600px;" /> <object data="/static/images/74hc595/demo_bb.svg" style="width: 600px;" type="image/svg+xml">image3</object></p>
+<p><strong>Attention : le 74HC595 est retourné !!</strong></p>
+</div>
+<div class="section" id="le-code">
+<h4>Le code !</h4>
+<div class="highlight"><pre><span></span><span class="c1">// Comme d&#39;habitude, on défini les pins avec des defines</span>
+<span class="cp">#define ANA 0    </span><span class="c1">// potar</span>
+<span class="cp">#define SHIFT 5</span>
+<span class="cp">#define LATCH 6</span>
+<span class="cp">#define DATA 7</span>
+
+<span class="c1">// Table des trucs à afficher (1 = led allumée)</span>
+<span class="k">const</span> <span class="n">byte</span> <span class="n">chars</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">B00000001</span><span class="p">,</span>
+    <span class="n">B00000010</span><span class="p">,</span>
+    <span class="n">B00000100</span><span class="p">,</span>
+    <span class="n">B00001000</span><span class="p">,</span>
+    <span class="n">B00010000</span><span class="p">,</span>
+    <span class="n">B00100000</span><span class="p">,</span>
+    <span class="n">B01000000</span><span class="p">,</span>
+    <span class="n">B10000000</span><span class="p">};</span>
+
+<span class="kt">int</span> <span class="n">time_delay</span> <span class="o">=</span> <span class="mi">500</span><span class="p">;</span> <span class="c1">// Delay de base</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="c1">// On déclare les pins vers le 74HC595 en sortie</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">SHIFT</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">LATCH</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">DATA</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+    <span class="c1">// On boucle sur le tableau char</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">digitalWrite</span><span class="p">(</span><span class="n">LATCH</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>  <span class="c1">// bloque la recopie</span>
+        <span class="c1">// On balance la donnée dans le premier étage</span>
+        <span class="n">shiftOut</span><span class="p">(</span><span class="n">DATA</span><span class="p">,</span> <span class="n">SHIFT</span><span class="p">,</span> <span class="n">MSBFIRST</span><span class="p">,</span> <span class="n">chars</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+        <span class="n">digitalWrite</span><span class="p">(</span><span class="n">LATCH</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span><span class="c1">// recopie</span>
+        <span class="c1">// On contrôle le potar pour déterminer le delay</span>
+        <span class="n">time_delay</span> <span class="o">=</span> <span class="n">map</span><span class="p">(</span><span class="n">analogRead</span><span class="p">(</span><span class="n">ANA</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1023</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">500</span><span class="p">);</span>
+        <span class="n">delay</span><span class="p">(</span><span class="n">time_delay</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+<p>Vous pouvez aussi <a class="reference external" href="/static/files/74HC595/74HC595.pde">le télécharger</a>.</p>
+<p>Bien entendu, vous pouvez utiliser ces ICs por commander des afficheurs
+7 segments ! (ils ont 8 pins de contrôle : 7 segment + point décimal).</p>
+<p>Dans un prochain article, on verra comment multiplexer les afficheurs et
+74HC595 !</p>
+</div>
+</div>
+</div>
+<div class="section" id="liens">
+<h2>Liens</h2>
+<ul class="simple">
+<li>la <a class="reference external" href="/static/files/74HC595/74HC595.pdf">datasheet du 74HC595</a></li>
+<li>le <a class="reference external" href="/static/files/74HC595/74HC595.zip">zip</a> de tous les fichiers liés au 74HC595 (+ cet article)</li>
+</ul>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

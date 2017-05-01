@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<header class=detail-list-header>
+	<h1>Tags</h1>
+</header>
+<ul id=tagcloud>
+	{%- for tag, articles in tags|sort %}
+	<li class=tag><a href="{{ SITEURL }}/{{ tag.url }}"><span class=tagname>{{ tag }}</a> </span><span class=tagcount>({{ articles|count }})</span></li>
+	{% else %}
+	<li class=tag><span class=accent>Nothing has been tagged yet! Come back later!</span></li>
+	{% endfor %}
+</ul>
+{% endblock %}

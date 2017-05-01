@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="VHDL" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Décrivons le matériel</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:20:58+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/vhdl.html">VHDL</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Certains composants sont programmables... vous connaissez probablement
+les microcontrôleurs (programmés en C, BASIC, etc...) mais il en existe
+d'autres comme les FPGA utilisent un <strong>HDL</strong> pour leur programmation
+comme <strong>VHDL</strong> ou <strong>Verilog</strong>. Regardons de plus près à quoi ressemble
+le premier...</p>
+<div class="section" id="hdl-kezaco">
+<h2>HDL ? Kézaco ?</h2>
+<p>Les <strong>HDL</strong> sont des langages de description matérielle (<em>Hardware
+Description Language</em>). On remarque que 2 en particulier ressortent : le
+<strong>VHDL</strong> et le <strong>Verilog</strong>. Le troll qui tourne autour de ces langages
+est violent et presque comparable à celui entre Linux et Windows ou
+Mac...</p>
+<p>En fait, une phrase revient assez courament :</p>
+<blockquote>
+<p>Le VHDL a été créé par des electroniciens ne comprenant rien à
+l'informatique, il a donc dû être bidouillé un bon moment avant
+d'être utilisable.</p>
+<p>Le Verilog à été créé par des informaticiens qui ne comprenaient
+rien à l'électronique, il a donc dû être bidouillé un bon moment
+avant d'être utilisable.</p>
+</blockquote>
+<p>Il ressort toutefois que les deux langages font grosso modo la même
+chose et peuvent être utilisés pour les même tâches.</p>
+<p>On notera que le <strong>VHDL</strong> est très utilisé en europe alors que le
+<strong>Verilog</strong> est souvent préféré outre-Atlantique...</p>
+</div>
+<div class="section" id="super-ca-sert-a-quoi">
+<h2>Super ! Ça sert à quoi ?</h2>
+<p><strong>VHDL</strong> signifie <em>VHSIC (Very High Speed Integrated Circuit) Hardware
+Description Language</em>) il s'agit donc d'un langage de description
+matérielle.</p>
+<p><img alt="Un Xilinx Spartan" src="/images/VHDL/3.jpg" style="width: 600px;" /></p>
+<p>Il permet de <em>décrire</em> des composants en termes d'entrées/sorties d'une
+part et de comportement d'autre part.</p>
+<p>Les composants peuvent ainsi être compilés et chargés dans des FPGA
+(<em>Field Programmable Gate Array</em> : mer de portes logiques
+programmables).</p>
+<p>Ci-contre un FPGA <em>Xilinx Spartan</em> (une bonne référence en général)
+(<a class="reference external" href="http://bak1.beareyes.com.cn/2/lib/200510/16/20051016006_0.htm">source de la photo</a>)</p>
+</div>
+<div class="section" id="un-exemple-un-exemple">
+<h2>Un exemple , un exemple !</h2>
+<p>Nous allons voir un exemple de description d'un <em>multiplexeur 4 vers 1</em>
+en VHDL. Un multiplexeur (ou <em>mux</em>) est un composant permettant de
+regrouper les données de N entrées vers 1 sortie. Voilà le schéma
+logique d'un mux 4 voies et sa table de vérité :</p>
+<p><img alt="Schéma logique" src="/images/VHDL/logique.png" style="width: 600px;" /></p>
+<div class="section" id="description">
+<h3>Description...</h3>
+<div class="section" id="premiere-vue-externe">
+<h4>Première vue externe</h4>
+<p>On peut représenter ce composant selon 2 vue externes différentes, voici
+la première :</p>
+<div class="highlight"><pre><span></span><span class="k">entity</span> <span class="nc">MUX1</span> <span class="k">is</span>
+    <span class="k">port</span><span class="p">(</span><span class="n">E0</span><span class="p">,</span> <span class="n">E1</span><span class="p">,</span> <span class="n">E2</span><span class="p">,</span> <span class="n">E3</span><span class="p">,</span> <span class="n">SEL0</span><span class="p">,</span> <span class="n">SEL1</span> <span class="o">:</span> <span class="k">in</span> <span class="kt">bit</span><span class="p">;</span>
+        <span class="n">S</span> <span class="o">:</span> <span class="k">out</span> <span class="kt">bit</span><span class="p">);</span>
+<span class="k">end</span> <span class="nc">MUX</span><span class="p">;</span>
+</pre></div>
+<p>On donne donc le nom de la vue, en précisant que c'est une <tt class="docutils literal">entity</tt>.
+On déclare ensuite ses I/O, ici :</p>
+<ul class="simple">
+<li>E0, E1, E2, E3, SEL0, SEL1 : entrées logique (binaires)</li>
+<li>S : Sortie logique</li>
+</ul>
+</div>
+<div class="section" id="vue-externe-1-architecture-1">
+<h4>Vue Externe 1 : Architecture 1</h4>
+<p>Nous avons une vue du composant en termes d'I/O, mais aucune information
+sur son comportement.</p>
+<p>Nous allons pour cela décrire une <tt class="docutils literal">architecture</tt> que nous allons
+ensuite lier à la vue externe.</p>
+<div class="highlight"><pre><span></span><span class="k">architecture</span> <span class="nc">FLOT_MUX</span> <span class="k">of</span> <span class="nc">MUX1</span> <span class="k">is</span>
+<span class="k">begin</span>
+    <span class="n">S</span> <span class="o">&lt;=</span> <span class="p">((</span><span class="k">not</span> <span class="n">SEL0</span><span class="p">)</span> <span class="k">and</span> <span class="p">(</span><span class="k">not</span> <span class="n">SEL1</span><span class="p">)</span> <span class="k">and</span> <span class="n">E0</span><span class="p">)</span> <span class="k">or</span>
+         <span class="p">((</span><span class="k">not</span> <span class="n">SEL0</span><span class="p">)</span> <span class="k">and</span> <span class="n">SEL1</span> <span class="k">and</span> <span class="n">E1</span><span class="p">)</span> <span class="k">or</span>
+         <span class="p">(</span><span class="n">SEL0</span> <span class="k">and</span> <span class="k">not</span><span class="p">(</span><span class="n">SEL1</span><span class="p">)</span> <span class="k">and</span> <span class="n">E2</span><span class="p">)</span> <span class="k">or</span>
+         <span class="p">(</span><span class="n">SEL0</span> <span class="k">and</span> <span class="n">SEL1</span> <span class="k">and</span> <span class="n">E3</span><span class="p">);</span>
+<span class="k">end</span> <span class="nc">FLOT_MUX</span><span class="p">;</span>
+</pre></div>
+<p>Cette architecture se base sur une logique purement combinatoire
+répondant à l'équation tirée de la table de vérité :</p>
+<div class="highlight"><pre><span></span><span class="n">S</span> <span class="o">=</span> <span class="p">(</span><span class="o">/</span><span class="n">SEL0</span><span class="p">.</span><span class="o">/</span><span class="n">SEL1</span><span class="p">.</span><span class="n">E0</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="o">/</span><span class="n">SEL0</span><span class="p">.</span><span class="n">SEL1</span><span class="p">.</span><span class="n">E1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">SEL0</span><span class="p">.</span><span class="o">/</span><span class="n">SEL1</span><span class="p">.</span><span class="n">E2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">SEL0</span><span class="p">.</span><span class="n">SEL1</span><span class="p">.</span><span class="n">E3</span><span class="p">)</span>
+</pre></div>
+<p>Dans cette architecture, les instructions sont concurrentes : elles
+<strong>s'exécutent en même temps</strong>.</p>
+</div>
+<div class="section" id="vue-externe-2-architecture-2">
+<h4>Vue Externe 2 : Architecture 2</h4>
+<p>Une même <tt class="docutils literal">entity</tt> peut avoir plusieurs <tt class="docutils literal">architecture</tt> différentes.</p>
+<p>Il existe un moyen de définir un comportement <strong>séquentiel</strong> pour une
+<tt class="docutils literal">entity</tt> en utilisant un <strong>processus</strong> (<tt class="docutils literal">process</tt>).</p>
+<p>Voilà une seconde architecture pour notre multiplexeur exploitant cette
+possibilité :</p>
+<div class="highlight"><pre><span></span><span class="k">architecture</span> <span class="nc">COMPOR_MUX</span> <span class="k">of</span> <span class="nc">MUX1</span> <span class="k">is</span>
+<span class="k">begin</span>
+    <span class="k">process</span>
+    <span class="k">begin</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">SEL0</span> <span class="o">=</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="k">and</span> <span class="p">(</span><span class="n">SEL1</span> <span class="o">=</span> <span class="sc">&#39;0&#39;</span><span class="p">))</span> <span class="k">then</span>
+            <span class="n">S</span> <span class="o">&lt;=</span> <span class="n">E0</span><span class="p">;</span>
+        <span class="k">elsif</span> <span class="p">((</span><span class="n">SEL0</span> <span class="o">=</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="k">and</span> <span class="p">(</span><span class="n">SEL1</span> <span class="o">=</span> <span class="sc">&#39;1&#39;</span><span class="p">))</span> <span class="k">then</span>
+            <span class="n">S</span> <span class="o">&lt;=</span> <span class="n">E1</span><span class="p">;</span>
+        <span class="k">elsif</span> <span class="p">((</span><span class="n">SEL0</span> <span class="o">=</span> <span class="sc">&#39;1&#39;</span><span class="p">)</span> <span class="k">and</span> <span class="p">(</span><span class="n">SEL1</span> <span class="o">=</span> <span class="sc">&#39;0&#39;</span><span class="p">))</span> <span class="k">then</span>
+            <span class="n">S</span> <span class="o">&lt;=</span> <span class="n">E2</span><span class="p">;</span>
+        <span class="k">elsif</span> <span class="p">((</span><span class="n">SEL0</span> <span class="o">=</span> <span class="sc">&#39;1&#39;</span><span class="p">)</span> <span class="k">and</span> <span class="p">(</span><span class="n">SEL1</span> <span class="o">=</span> <span class="sc">&#39;1&#39;</span><span class="p">))</span> <span class="k">then</span>
+            <span class="n">S</span> <span class="o">&lt;=</span> <span class="n">E3</span><span class="p">;</span>
+        <span class="k">end</span> <span class="k">if</span><span class="p">;</span>
+        <span class="k">wait</span> <span class="k">on</span> <span class="n">E0</span><span class="p">,</span> <span class="n">E1</span><span class="p">,</span> <span class="n">E2</span><span class="p">,</span> <span class="n">E3</span><span class="p">,</span> <span class="n">SEL0</span><span class="p">,</span> <span class="n">SEL1</span><span class="p">;</span>
+    <span class="k">end</span> <span class="k">process</span><span class="p">;</span>
+<span class="k">end</span> <span class="nc">COMPOR_MUX</span><span class="p">;</span>
+</pre></div>
+<p>L'instruction <tt class="docutils literal">wait on E0, E1, E2, E3, SEL0, SEL1</tt> à la fin du
+processus indique que le composant attend un changement sur une des
+entrées nommées.</p>
+<p><em>Note :</em> On aurait pu aussi mettre un temps. Par exemple
+<tt class="docutils literal">wait for 100 ms</tt> aurait produit une attente de 100ms à la fin du
+process.</p>
+</div>
+<div class="section" id="architecture-2-utilisation-de-vecteurs-de-bits">
+<h4>Architecture 2 : utilisation de vecteurs de bits</h4>
+<p>Un vecteur de bit n'est ni plus ni moins qu'un tableau de bits dont une
+des dimensions est 1.</p>
+<p>Si nous observons correctement, on remarque que l'on peut considérer
+l'ensemble `{SEL0, SEL1} comme un vecteur de longueur 2.</p>
+<p>Nous pouvons donc avancer une autre vue externe pour le multiplexeur et
+une architecture qui va bien en utilisant un processus et une structure
+<tt class="docutils literal">case</tt> :</p>
+<div class="highlight"><pre><span></span><span class="k">entity</span> <span class="nc">MUX2</span> <span class="k">is</span>
+    <span class="k">port</span><span class="p">(</span><span class="n">E0</span><span class="p">,</span> <span class="n">E1</span><span class="p">,</span> <span class="n">E2</span><span class="p">,</span> <span class="n">E3</span> <span class="o">:</span> <span class="k">in</span> <span class="kt">bit</span><span class="p">;</span>
+        <span class="c1">-- SEL est un vecteur de bit indexé de 1 à 0</span>
+        <span class="n">SEL</span> <span class="o">:</span> <span class="k">in</span> <span class="kt">bit_vector</span><span class="p">(</span><span class="mi">1</span> <span class="k">downto</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="n">S</span> <span class="o">:</span> <span class="k">out</span> <span class="kt">bit</span><span class="p">);</span>
+<span class="k">end</span> <span class="nc">MUX2</span><span class="p">;</span>
+
+<span class="k">architecture</span> <span class="nc">COMPOR_MUX2</span> <span class="k">of</span> <span class="nc">MUX2</span> <span class="k">is</span>
+<span class="k">begin</span>
+    <span class="k">process</span>
+    <span class="k">begin</span>
+        <span class="k">case</span> <span class="n">SEL</span> <span class="k">is</span>
+            <span class="k">when</span> <span class="s">&quot;00&quot;</span> <span class="o">=&gt;</span> <span class="n">S</span> <span class="o">&lt;=</span> <span class="n">E0</span><span class="p">;</span> <span class="c1">-- On recopie E0 dans S</span>
+            <span class="k">when</span> <span class="s">&quot;01&quot;</span> <span class="o">=&gt;</span> <span class="n">S</span> <span class="o">&lt;=</span> <span class="n">E1</span><span class="p">;</span> <span class="c1">-- On recopie E1 dans S</span>
+            <span class="k">when</span> <span class="s">&quot;10&quot;</span> <span class="o">=&gt;</span> <span class="n">S</span> <span class="o">&lt;=</span> <span class="n">E2</span><span class="p">;</span> <span class="c1">-- On recopie E2 dans S</span>
+            <span class="k">when</span> <span class="s">&quot;11&quot;</span> <span class="o">=&gt;</span> <span class="n">S</span> <span class="o">&lt;=</span> <span class="n">E3</span><span class="p">;</span> <span class="c1">-- On recopie E3 dans S</span>
+        <span class="k">end</span> <span class="k">case</span><span class="p">;</span>
+        <span class="k">wait</span> <span class="k">on</span> <span class="n">SEL</span><span class="p">,</span> <span class="n">E0</span><span class="p">,</span> <span class="n">E1</span><span class="p">,</span> <span class="n">E2</span><span class="p">,</span> <span class="n">E3</span><span class="p">;</span>
+    <span class="k">end</span> <span class="k">process</span><span class="p">;</span>
+<span class="k">end</span> <span class="nc">COMPOR_MUX2</span><span class="p">;</span>
+</pre></div>
+<p>Tout ce qui est situé après <tt class="docutils literal"><span class="pre">--</span></tt> et sur la même ligne est un
+commentaire (les commentaires multilignes n'existent pas).</p>
+<p>Nous avons donc 2 vue externes possible est 3 architectures valable pour
+le même composant.</p>
+</div>
+</div>
+<div class="section" id="comment-je-verifie">
+<h3>Comment je vérifie ?</h3>
+<p>Au niveau syntaxique et simulation, des outils comme <strong>ghdl</strong> sont
+plutot utiles.</p>
+<p>Pour une simple analyse, la commande est la suivante :</p>
+<div class="highlight"><pre><span></span><span class="err">$</span> <span class="n">ghdl</span> <span class="o">-</span><span class="n">a</span> <span class="n">fichier</span><span class="p">.</span><span class="n">vhdl</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="le-bonus-le-compteur-8-bits-en-vhdl">
+<h2>Le bonus : le compteur 8 bits en VHDL</h2>
+<p>A vous de voir si vous comprenez tout là-dedans :</p>
+<div class="highlight"><pre><span></span><span class="k">entity</span> <span class="nc">COUNTER</span> <span class="k">is</span>
+    <span class="k">port</span><span class="p">(</span><span class="n">S</span> <span class="o">:</span> <span class="k">out</span> <span class="kt">bit_vector</span><span class="p">(</span><span class="mi">7</span> <span class="k">downto</span> <span class="mi">0</span><span class="p">));</span>
+<span class="k">end</span> <span class="nc">COUNTER</span><span class="p">;</span>
+
+<span class="k">architecture</span> <span class="nc">ARCH1</span> <span class="k">of</span> <span class="nc">COUNTER</span> <span class="k">is</span>
+<span class="k">begin</span>
+    <span class="k">process</span>
+        <span class="k">variable</span> <span class="n">N</span> <span class="o">:</span> <span class="kt">integer</span><span class="p">;</span>
+        <span class="k">variable</span> <span class="n">P</span> <span class="o">:</span> <span class="kt">integer</span><span class="p">;</span>
+    <span class="k">begin</span>
+        <span class="n">N</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">true</span><span class="p">)</span> <span class="k">loop</span>
+            <span class="k">while</span> <span class="p">(</span><span class="n">N</span><span class="o">&lt;</span><span class="mi">256</span><span class="p">)</span> <span class="k">loop</span>
+                <span class="k">for</span> <span class="n">P</span> <span class="k">IN</span> <span class="mi">0</span> <span class="k">to</span> <span class="mi">7</span> <span class="k">loop</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="mi">2</span><span class="o">**</span><span class="n">P</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+                        <span class="n">S</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="sc">&#39;1&#39;</span><span class="p">;</span>
+                    <span class="k">else</span>
+                        <span class="n">S</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="sc">&#39;0&#39;</span><span class="p">;</span>
+                    <span class="k">end</span> <span class="k">if</span><span class="p">;</span>
+                <span class="k">end</span> <span class="k">loop</span><span class="p">;</span>
+                <span class="k">wait</span> <span class="k">for</span> <span class="mi">100</span> <span class="n">ms</span><span class="p">;</span>
+                <span class="n">N</span> <span class="o">:=</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="k">end</span> <span class="k">loop</span><span class="p">;</span>
+            <span class="n">N</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">end</span> <span class="k">loop</span><span class="p">;</span>
+    <span class="k">end</span> <span class="k">process</span><span class="p">;</span>
+<span class="k">end</span> <span class="nc">ARCH1</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>Le VHDL permet aussi l'association de composants entre eux pour créer
+des composants plus importants en les décrivant par partie (un
+additionneur complet sur 1 bit par exemple est l'assemblage de 2 demi
+additionneur et d'une porte OU).</p>
+<p>Ce concept plus avancé fera surement l'objet d'un prochain article.</p>
+</div>
+<div class="section" id="liens">
+<h2>Liens</h2>
+<p>Quelques infos sur <strong>Wikipedia</strong></p>
+<ul class="simple">
+<li><a class="reference external" href="http://fr.wikipedia.org/wiki/VHDL">(fr) VHDL</a></li>
+<li><a class="reference external" href="http://en.wikipedia.org/wiki/VHDL">(en) VHDL</a></li>
+</ul>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

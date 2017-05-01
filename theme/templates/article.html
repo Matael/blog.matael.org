@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block head %}
+	{{ super() }}
+	{% if article.description %}
+		<meta name="description" content="{{article.description}}" />
+	{% endif %}
+
+	{% for tag in article.tags %}
+		<meta name="tags" content="{{tag}}" />
+	{% endfor %}
+{% endblock %}
+
+{% block content %}
+<section id=content>
+	<header>
+		<h1>{{ article.title }}</h1>
+		{% import 'translations.html' as translations with context %}
+		{{ translations.translations_for(article) }}
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+			{% for author in article.authors %}
+				{% if loop.last %}{% if not loop.first %} and {% endif %}{% else %}{% if not loop.first %}, {% endif %}{% endif %}
+				<a href="{{ SITEURL }}/{{ author.url }}" class=author>{{ author }}</a>
+			{% endfor %}
+		</p>
+		<p>On <time datetime="{{ article.date.isoformat() }}">{{ article.locale_date }}</span></p>
+		<ul class=tags>
+			{% for t in article.tags %}
+				<li><a href="{{ SITEURL }}/{{ t.url }}">{{t}}</a></li>
+			{% endfor %}
+		</ul>
+	</div>
+	<div id=article_body>
+		{{ article.content }}
+	</article>
+</section>
+{% endblock %}

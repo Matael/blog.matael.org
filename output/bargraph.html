@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="arduino" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Bargraph</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:20:58+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/arduino.html">arduino</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Dans la série &quot;utilisons des LEDs et des 74HC595&quot;, voici le bargraph...</p>
+<p>Dans le cadre du HAUM, un hackerspace monté au mans avec le concours de
+l'université (surtout du département info), je me suis lancé dans des
+tests autour des bargraphs.</p>
+<div class="section" id="qu-est-ce-que-c-est">
+<h2>Qu'est ce que c'est ?</h2>
+<p>Un bargraph, c'est une rangée de LEDs réagissant à un signal. Le signal
+peut être de n'importe quelle sorte, mais le plus souvent, il s'git d'un
+signal sonore. On trouve notamment des bargraphs sur les tables de
+mixage, certains amplis, etc...</p>
+<p>On utilise ce genre de choses pour donner une idée de <strong>l'amplitude
+moyenne d'un signal</strong> (plus il y a de LEDs allumées, plus c'est fort).</p>
+<p>Ici, on va essayer de faire fonctionner la barre de LEDs commandée <em>via</em>
+l'arduino et deux 74HC595 (on aura donc 16 LEDs) d'abord en <em>standalone</em>
+(pour tester) puis en réaction à la valeur d'un potentiomètre et d'une
+LDR (photo résistance).</p>
+</div>
+<div class="section" id="les-leds">
+<h2>Les LEDs</h2>
+<p>Prenons le problème dans l'ordre. On cherche à créer un bargraph LED, il
+nous faut donc des LEDs et de quoi les piloter.</p>
+<p>Vu qu'on va utiliser l'arduino pour l'interface entre les données
+(signal, valeur du potar/LDR) et l'affichage (les LEDs), on doit soit :</p>
+<ul class="simple">
+<li>Se limiter dans le nombre de LEDs et oublier des circuits complexes
+(toutes les LEDs sont reliées à des pins différentes de l'arduino)</li>
+<li>Utiliser un circuit d'interface pour lier l'arduino aux LEDs avec un
+minimum de pins.</li>
+</ul>
+<p>J'ai choisi la seconde solution et, quitte à utiliser une interface, vu
+les choses en grand avec 16 LEDs (soit 2 74HC595).</p>
+<p>Ils seront donc chainés pour pouvoir piloter les 16 LEDs avec seulement
+3 pins de l'arduino (tout en sachant que on aurait pu étendre ce nombre
+à souhait en chainant d'autres circuits intégrés).</p>
+<p><strong>Note :</strong> J'ai horreur de devoir enficher 16 LEDs et 16 résistances
+classiques à la main :</p>
+<ul class="simple">
+<li>On peut se tromper de sens pour les LEDs</li>
+<li>On a du mal à optimiser la place</li>
+</ul>
+<p>J'ai donc choisi d'utiliser des barres de LEDs (ici 2 barres de 10
+LEDs empaquetées corectement) et des réseaux de résistances (2 des 8
+résistances + 4 resistances classiques pour l'appoint).</p>
+<p>Les 4 LEDs en trop ne sont pas utilisées mais pourraient l'être.</p>
+<p>Sur les schémas, Fritzing ne disposant pas de ces 2 composants, j'ai
+utilisé des LEDs et des résistances classiques (et j'ai mis le bon
+nombre ;) ).</p>
+<p>Notons que même si ce ne sont que des LEDs, le montage consomme un peu.
+Pour éviter tout problème, j'ai choisi de le faire tourner en utilisant
+une alimentation ATX comme source d'énergie (en 5V).</p>
+<div class="section" id="du-chainage-des-ic">
+<h3>Du chainage des IC</h3>
+<p>Les 74HC595 sont chainés comme je l'avais proposé
+<a class="reference external" href="/writing/arduino-et-registres">ici</a> :</p>
+<div class="figure align-center">
+<img alt="" src="/static/images/74hc595/double.png" style="width: 500px;" />
+</div>
+<p>Les sorties <tt class="docutils literal">Q0</tt> à <tt class="docutils literal">Q7</tt> de chacun des deux IC sont raccordées aux
+LEDs qui vont bien.</p>
+</div>
+<div class="section" id="schema-complet-et-explication">
+<h3>Schéma complet et explication</h3>
+<div class="figure align-center">
+<img alt="" src="/static/images/bargraph/bargraph.png" style="width: 500px;" />
+</div>
+<p>Vous pourrez trouver le fichier source pour <a class="reference external" href="/static/images/bargraph/bargraph.fzz">fritzing</a>.</p>
+<div class="section" id="explication">
+<h4>Explication</h4>
+<p>On note 2 circuits :</p>
+<ul class="simple">
+<li>En <strong>violet</strong> : le circuit vers l'entrée analogique. On a 2
+dispositifs : 1 potentiomètre (20kOhms) et une LDR (photorésistance).
+Pour éviter les montages à la <em>one-again</em> habituels (c'est pourtant
+ce que j'ai fait sur le proto physique), j'ai mis 3 bornes males
+reliables deux à deux au moyen d'un shunt pour le choix du circuit
+d'entrée.</li>
+<li>En <strong>bleu</strong> : le circuit de <em>&quot;données&quot;</em>. En gros, les 2 pins DS des
+74HC595 et les lignes vers les leds.</li>
+</ul>
+<p>La dernière chose à noter : j'ai mis 2 bornes (femelles cette fois) en
+bout de breadboard. En effet, lorsque l'on commence à augmenter la
+consommation potentielle, il vaut mieux passer par une alimentation
+externe (le régulateur de l'arduino n'est pas toujours suffisant). Notez
+aussi que l'arduino est alimenté sur les 2 lignes.</p>
+</div>
+</div>
+</div>
+<div class="section" id="les-differents-pilotages">
+<h2>Les différents pilotages</h2>
+<p>Détaillons un peu les différents modes de pilotage dont nous avons parlé
+tout à l'heure.</p>
+<div class="section" id="arduino-seul">
+<h3>Arduino seul</h3>
+<p>Pour commencer, nous allons essayer de faire une simple chenillard LED
+sur la rangée.</p>
+<p>La partie la plus longue est celle définissant les différents <em>patterns</em>
+à appliquer sur le bargraph. Ici, on aurait pu trouver plus simple que
+de passer par un tableau, mais cela permet de voir le principe
+d'utilisation d'un <em>charset</em> (ici, des <em>patterns</em>).</p>
+<p>Voilà la liste des patterns utilisés :</p>
+<div class="highlight"><pre><span></span><span class="k">const</span> <span class="n">byte</span> <span class="n">patterns</span><span class="p">[</span><span class="mi">16</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">{</span><span class="n">B10000000</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B01000000</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00100000</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00010000</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00001000</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000100</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000010</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000001</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B10000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B01000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00100000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00010000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00001000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00000100</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00000010</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00000001</span><span class="p">}};</span>
+</pre></div>
+<p>Comme on le voit, les patterns de 16bits chacun sont découpés en 2
+valeurs de type <tt class="docutils literal">byte</tt> stockées dans un tableau à 2 dimension.</p>
+<p>Pour charger les 2 registres chaînés, il nous suffira d'envoyer d'abord
+l'octet 1 puis l'octet 2 (case 0 puis case 1) de chaque ligne. Le
+premier octet envoyé se loge dans le premier registre, puis on envoie le
+second qui &quot;pousse&quot; le premier vers la pin <tt class="docutils literal">Q7'</tt> et celui-ci vient
+remplir le second registre.</p>
+<p>La fonction <tt class="docutils literal">loop()</tt> est particulièrement simple :</p>
+<div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span>
+<span class="p">{</span>
+     <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// création de la variable d&#39;itération</span>
+     <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">16</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+         <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span> <span class="c1">// blocage de la recopie</span>
+         <span class="n">shiftOut</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">SH_CP</span><span class="p">,</span> <span class="n">MSBFIRST</span><span class="p">,</span> <span class="n">patterns</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span> <span class="c1">// premier octet</span>
+         <span class="n">shiftOut</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">SH_CP</span><span class="p">,</span> <span class="n">MSBFIRST</span><span class="p">,</span> <span class="n">patterns</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]);</span> <span class="c1">// deuxième octet</span>
+         <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span> <span class="c1">// recopie</span>
+         <span class="n">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>
+     <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+<p>Le code complet reste relativement trivial, je ne m'étendrais pas : les
+commentaires suffisent.</p>
+<div class="highlight"><pre><span></span><span class="cp">#define DS 5    </span><span class="c1">// pin de donnée des 74</span>
+<span class="cp">#define SH_CP 6 </span><span class="c1">// pin d&#39;horloge</span>
+<span class="cp">#define ST_CP 7 </span><span class="c1">// pin de latch (recopie)</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="c1">// décalaration des 3 pins en sortie</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">SH_CP</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">const</span> <span class="n">byte</span> <span class="n">patterns</span><span class="p">[</span><span class="mi">16</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">{</span><span class="n">B10000000</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B01000000</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00100000</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00010000</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00001000</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000100</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000010</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000001</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B10000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B01000000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00100000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00010000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00001000</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00000100</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00000010</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00000001</span><span class="p">}};</span>
+
+<span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span>
+<span class="p">{</span>
+     <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// création de la variable d&#39;itération</span>
+     <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">16</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+         <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span> <span class="c1">// blocage de la recopie</span>
+         <span class="n">shiftOut</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">SH_CP</span><span class="p">,</span> <span class="n">MSBFIRST</span><span class="p">,</span> <span class="n">patterns</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span> <span class="c1">// premier octet</span>
+         <span class="n">shiftOut</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">SH_CP</span><span class="p">,</span> <span class="n">MSBFIRST</span><span class="p">,</span> <span class="n">patterns</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]);</span> <span class="c1">// deuxième octet</span>
+         <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span> <span class="c1">// recopie</span>
+         <span class="n">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>
+     <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="section" id="reaction-a-un-potentiometre">
+<h3>Réaction à un potentiomètre</h3>
+<p>L'adaptation du code est très simple ici. Il suffit d'une simple lecture
+sur la bonne pin analogique (pour nous, la 0) et d'un remap de la valeur
+depuis <tt class="docutils literal">[0;1023]</tt> (le convertisseur analogique/numérique est sur 10
+bits) vers <tt class="docutils literal">[0;15]</tt>.</p>
+<p>En réalité, nous voulons que la valeur envoyée par le potentiomètre
+influe sur la vitesse de passage d'une LED à la suivante. On va donc
+changer la ligne contenant <tt class="docutils literal">delay(200)</tt> par :</p>
+<div class="highlight"><pre><span></span><span class="n">delay</span><span class="p">(</span><span class="n">map</span><span class="p">(</span><span class="n">analogRead</span><span class="p">(</span><span class="n">POTAR</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1023</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">250</span><span class="p">));</span>
+</pre></div>
+<p>Il faut aussi rajouter notre directive de pré-processeur définissant
+<tt class="docutils literal">POTAR</tt> :</p>
+<div class="highlight"><pre><span></span><span class="cp">#define POTAR 0</span>
+</pre></div>
+</div>
+<div class="section" id="reaction-a-une-ldr">
+<h3>Réaction à une LDR</h3>
+<p>La <em>LDR</em> (<em>Light Dependant Resistor</em> ou photorésistance) est un
+composant dont la résistance varie en fonction de la luminosité. En
+fait, plus l'environnement est lumineux, plus la valeur est grande (il
+faudra d'ailleurs que j'essaye d'utiliser une LDR pour détecter des
+couleurs).</p>
+<p>Pour l'instant, notre bargraph n'en était pas vraiment un : il n'était
+utilisé que comme afficheur piloté par une séquence prédéfinie et la
+seule donnée récoltée (ici, la valeur d'un potentiomètre) ne servait que
+pour choisir la fréquence de rafraichissement.</p>
+<p>Maintenant, <em>level up</em> ! Cette fois, on utilise une LDR et on cherche à
+créer un bargraph indicateur de luminosité.</p>
+</div>
+</div>
+<div class="section" id="l-aspect-general">
+<h2>L'aspect général...</h2>
+<p>... ne change pas !</p>
+<p>C'est la même fonction <tt class="docutils literal">setup()</tt> qu'avant et un <tt class="docutils literal">#define</tt> à changé
+de nom, mais à part ça, rien de nouveau pour le début du programme :</p>
+<div class="highlight"><pre><span></span><span class="cp">#define DS 5</span>
+<span class="cp">#define SH_CP 6</span>
+<span class="cp">#define ST_CP 7</span>
+
+<span class="cp">#define LDR 0</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">SH_CP</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+<p>Les patterns quant à eux ont très peu changé :</p>
+<div class="highlight"><pre><span></span><span class="k">const</span> <span class="n">byte</span> <span class="n">patterns</span><span class="p">[</span><span class="mi">16</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">{</span><span class="n">B01111111</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00111111</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00011111</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00001111</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000111</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000011</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000001</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B01111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00011111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00001111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00000111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00000011</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00000001</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">}};</span>
+</pre></div>
+<div class="section" id="le-coeur-du-programme">
+<h3>Le coeur du programme</h3>
+<p>Il y a des fois ou la logique pose soucis.</p>
+<div class="section" id="hysteresis-mon-amour">
+<h4>Hysteresis mon amour</h4>
+<p>Si on teste une <tt class="docutils literal">main</tt> comme celle ci :</p>
+<div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span>
+<span class="p">{</span>
+     <span class="n">current</span> <span class="o">=</span> <span class="n">map</span><span class="p">(</span><span class="n">analogRead</span><span class="p">(</span><span class="n">LDR</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1023</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">);</span>
+     <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
+     <span class="n">shiftOut</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">SH_CP</span><span class="p">,</span> <span class="n">MSBFIRST</span><span class="p">,</span> <span class="n">patterns</span><span class="p">[</span><span class="n">current</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+     <span class="n">shiftOut</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">SH_CP</span><span class="p">,</span> <span class="n">MSBFIRST</span><span class="p">,</span> <span class="n">patterns</span><span class="p">[</span><span class="n">current</span><span class="p">][</span><span class="mi">1</span><span class="p">]);</span>
+     <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span>
+     <span class="n">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+<p>On va se rendre compte que.... ça marche pas très bien (voir carrément
+mal).</p>
+<p>Les coupure entre les intervalles représentés par les leds ne sont pas
+nets.</p>
+<p>Si on fait la division entière <tt class="docutils literal">1023/16</tt>, on trouve 63. Jusqu'a 63, on
+utilise donc le pattern 0 et à 64, on utilise le pattern 1. Maintenant
+imaginons que la valeur oscille entre 63 et 64... là, on a un truc
+vraiment pas top.</p>
+<p>L'hystérésis désigne l'écart entre 2 valeurs : ici l'écart entre
+l'intervalle du pattern 0 et celui du patter 1 (etc...).</p>
+<p>Grosso modo, plutôt que dire</p>
+<blockquote>
+jusqu'a 63, t'es à 0, à partir de 64, t'es à 1</blockquote>
+<p>on va dire</p>
+<blockquote>
+jusqu'a 60, t'es à 0 à partir de 70 t'es à 1 et entre les deux, tu
+restes comme tu étais avant</blockquote>
+<p>Pour implémenter ce comportement, j'ai choisi de passer par une fonction
+:</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">set_current_num</span><span class="p">(</span><span class="kt">int</span> <span class="n">value</span><span class="p">,</span> <span class="kt">int</span> <span class="n">current</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">64</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">60</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">125</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">1</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">135</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">190</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">2</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">200</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">250</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">3</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">260</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">310</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">4</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">320</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">370</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">5</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">380</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">435</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">6</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">445</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">505</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">7</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">515</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">570</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">8</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">580</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">635</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">9</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">645</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">700</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">10</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">710</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">760</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">11</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">770</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">820</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">12</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">830</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">880</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">13</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">890</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">945</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">14</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">955</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">15</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span> <span class="k">return</span> <span class="n">current</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+<p>Elle prend comme paramètres, vous l'aurez compris, la valeur lue sur la
+pin analogique et le numéro du pattern courant. Elle retourne un numéro
+entre 0 et 15 inclus correspondant à un pattern.</p>
+<p>De là, la <tt class="docutils literal">main()</tt> devient simple :</p>
+<div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span>
+<span class="p">{</span>
+     <span class="kt">int</span> <span class="n">current</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// on crée la variable une bonne fois pour toute</span>
+
+     <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span> <span class="c1">// boucle de contrôle</span>
+         <span class="c1">// on récupère le numéro de pattern</span>
+         <span class="n">current</span> <span class="o">=</span> <span class="n">set_current_num</span><span class="p">(</span><span class="n">analogRead</span><span class="p">(</span><span class="n">LDR</span><span class="p">),</span> <span class="n">current</span><span class="p">);</span>
+
+         <span class="c1">// et on l&#39;envoie au bargraph</span>
+         <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
+         <span class="n">shiftOut</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">SH_CP</span><span class="p">,</span> <span class="n">MSBFIRST</span><span class="p">,</span> <span class="n">patterns</span><span class="p">[</span><span class="n">current</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+         <span class="n">shiftOut</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">SH_CP</span><span class="p">,</span> <span class="n">MSBFIRST</span><span class="p">,</span> <span class="n">patterns</span><span class="p">[</span><span class="n">current</span><span class="p">][</span><span class="mi">1</span><span class="p">]);</span>
+         <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span>
+         <span class="n">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>
+     <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+<p>Aaaaaaaannnd... <strong>it works</strong> !</p>
+<p>Voilà le code complet :</p>
+<div class="highlight"><pre><span></span><span class="cp">#define DS 5</span>
+<span class="cp">#define SH_CP 6</span>
+<span class="cp">#define ST_CP 7</span>
+
+<span class="cp">#define LDR 0</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">SH_CP</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">const</span> <span class="n">byte</span> <span class="n">patterns</span><span class="p">[</span><span class="mi">16</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">{</span><span class="n">B01111111</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00111111</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00011111</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00001111</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000111</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000011</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000001</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B11111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B01111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00111111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00011111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00001111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00000111</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00000011</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00000001</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">B00000000</span><span class="p">,</span> <span class="n">B00000000</span><span class="p">}};</span>
+
+<span class="kt">int</span> <span class="nf">set_current_num</span><span class="p">(</span><span class="kt">int</span> <span class="n">value</span><span class="p">,</span> <span class="kt">int</span> <span class="n">current</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">64</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">60</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">125</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">1</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">135</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">190</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">2</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">200</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">250</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">3</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">260</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">310</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">4</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">320</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">370</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">5</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">380</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">435</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">6</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">445</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">505</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">7</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">515</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">570</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">8</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">580</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">635</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">9</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">645</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">700</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">10</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">710</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">760</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">11</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">770</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">820</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">12</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">830</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">880</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">13</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">890</span> <span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">945</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">14</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">955</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">15</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span> <span class="k">return</span> <span class="n">current</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span>
+<span class="p">{</span>
+     <span class="kt">int</span> <span class="n">current</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+     <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
+         <span class="n">current</span> <span class="o">=</span> <span class="n">set_current_num</span><span class="p">(</span><span class="n">analogRead</span><span class="p">(</span><span class="n">LDR</span><span class="p">),</span> <span class="n">current</span><span class="p">);</span>
+         <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
+         <span class="n">shiftOut</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">SH_CP</span><span class="p">,</span> <span class="n">MSBFIRST</span><span class="p">,</span> <span class="n">patterns</span><span class="p">[</span><span class="n">current</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+         <span class="n">shiftOut</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">SH_CP</span><span class="p">,</span> <span class="n">MSBFIRST</span><span class="p">,</span> <span class="n">patterns</span><span class="p">[</span><span class="n">current</span><span class="p">][</span><span class="mi">1</span><span class="p">]);</span>
+         <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ST_CP</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span>
+         <span class="n">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>
+     <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>On a donc désormais le moyen d'afficher un bargraph cohérent pour
+n'importe quel signal.</p>
+<p>Le but ultime de la conception d'un bargraph est de l'utiliser pour
+quantifier un avec un signal sonore en provenance d'un lecteur mp3 par
+exemple. Mais ça, ce sera pour une autre fois.</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

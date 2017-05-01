@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="octave" />
+		<meta name="tags" content="matlab" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Octave et diagrammes</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:27:47+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/octave.html">octave</a></li>
+				<li><a href="/tag/matlab.html">matlab</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Dans le cadre de mes études, je suis amené à utiliser <a class="reference external" href="http://www.mathworks.fr/">MatLab</a>/<a class="reference external" href="http://www.gnu.org/software/octave/">Octave</a>.
+Alors qu'une vaste majorité de nos professeurs semblent utiliser Matlab, nous avons plus tendance à nous orienter vers GNU Octave.</p>
+<p>En effet, celui-ci est libre et est largement suffisant pour ce que je veux en faire.</p>
+<p>L'autre jour, j'ai cherché à tracer des diagrammes de <a class="reference external" href="http://fr.wikipedia.org/wiki/Diagramme_de_Bode">Bode</a> sur Octave.
+En triturant et en jouant avec <tt class="docutils literal">subplot</tt>, j'ai réussi à obtenir un semblant de diagramme, mais je me suis demandé s'il n'y avait pas plus simple.</p>
+<p>Ces diagrammes sont facilement traçables sous Matlab <em>via</em> une <em>Toolbox</em> payante (pour ce que j'en sais).
+Cette <em>toolbox</em> propose aussi :</p>
+<ul class="simple">
+<li>modélisation de fonction de transfert (via <tt class="docutils literal">tf()</tt>)</li>
+<li>tracé de diagrammes de :<ul>
+<li>Bode (<tt class="docutils literal">bode()</tt>)</li>
+<li>Nyquist (<tt class="docutils literal">nyquist()</tt>)</li>
+<li>Black-Nichols (<tt class="docutils literal">black()</tt>)</li>
+</ul>
+</li>
+<li>etc...</li>
+</ul>
+<p>En cherchant un peu, j'ai découvert l'existence du paquet <tt class="docutils literal"><span class="pre">octave-control</span></tt> qui permet d'accèder à des fonctions semblables (entre autres), et ce dans <a class="reference external" href="http://www.gnu.org/software/octave/">Octave</a>.</p>
+<div class="section" id="installation">
+<h2>Installation</h2>
+<p>Pour ceux disposant d'une distribution <em>Debian-based</em>, le paquet est installable via :</p>
+<div class="highlight"><pre><span></span>sudo apt-get install octave-control
+</pre></div>
+<p>Pour certaines autres distros, le paquet est probablement disponible dans les dépots.
+Pour ArchLinux par exemple, le paquet est disponible dans <a class="reference external" href="http://aur.archlinux.org">AUR</a> sous le nom <tt class="docutils literal"><span class="pre">octave-control</span></tt> (ô surprise !).</p>
+<p>Pour ce qui est des systèmes propriétaires (&lt;troll&gt;sapucépalibre&lt;/troll&gt;), je vous laisse le soin de regarder la doc.</p>
+</div>
+<div class="section" id="utilisation">
+<h2>Utilisation</h2>
+<div class="section" id="modelisation-de-fonctions-de-transfert">
+<h3>Modélisation de fonctions de transfert</h3>
+<p>Par chance, Octave modélise très bien les fonctions de transfert via <tt class="docutils literal">tf()</tt> du paquet <tt class="docutils literal"><span class="pre">octave-control</span></tt>.</p>
+<p>On doit préciser à cette fonction au moins deux paramètres : des vecteurs de coefficients.
+Finalement, on devra noter <tt class="docutils literal">tf(NUM, DEN)</tt> où <tt class="docutils literal">NUM</tt> est le vecteur de coefficient pour le numérateur et <tt class="docutils literal">DEN</tt> celui pour le dénominateur.</p>
+<p>La puissance maximale sur chacun des deux ensemble de termes est déterminé par la longueur des vecteurs.</p>
+<p>Enfin, les coefficients entrés s'appliquent aux termes de puissance décroissante.</p>
+<p>Pour l'exemple, essayons de modéliser une équation de la forme :</p>
+<img alt="" class="align-center" src="/static/images/octave/formule_cible.png" />
+<p>On identifie nos 2 vecteurs :</p>
+<ul class="simple">
+<li><tt class="docutils literal">NUM = [1]</tt></li>
+<li><tt class="docutils literal">DEN = [0.1j, 0.6j, 1]</tt></li>
+</ul>
+<p>Nous pouvons alors modéliser la fonction de transfert via :</p>
+<div class="highlight"><pre><span></span><span class="n">clear</span> <span class="n">all</span><span class="p">;</span>
+<span class="n">close</span> <span class="n">all</span><span class="p">;</span>
+
+<span class="n">N</span> <span class="p">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+<span class="n">D</span> <span class="p">=</span> <span class="p">[</span><span class="mf">0.1</span><span class="nb">j</span><span class="p">,</span> <span class="mf">0.6</span><span class="nb">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">];</span>
+
+<span class="n">fonction</span> <span class="p">=</span> <span class="n">tf</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">D</span><span class="p">);</span>
+</pre></div>
+<p>Vous noterez que la variable imaginaire <em>j</em> est directement positionnée dans le vecteur.
+En effet, celle ci est constante et n'est pas prise en compte directement par <tt class="docutils literal">tf()</tt>.</p>
+<p>Enfin, il faut savoir que d'autre paramètres existent et permettent d'être plus précis pour, par exemple, travailler sur un signal réelle et lui appliquer ladite fonction.</p>
+</div>
+<div class="section" id="trace">
+<h3>Tracé</h3>
+<p>Tout l'avantage de passer par la modélisation d'une fonction de transfert réside dans le tracé de graphes.</p>
+<p>En effet, <tt class="docutils literal"><span class="pre">octave-control</span></tt> permet d'utiliser plusieurs fonctions de tracé, celle ci utilisant une fonction de transfert en paramètre (pour la modélisation du système).</p>
+<p>Reste à tester le tracé de diagrammes avec :</p>
+<div class="highlight"><pre><span></span><span class="n">bode</span><span class="p">(</span><span class="n">fonction</span><span class="p">)</span>      # <span class="n">Bode</span>
+<span class="n">nyquist</span><span class="p">(</span><span class="n">fonction</span><span class="p">)</span>   # <span class="n">Nyquist</span>
+<span class="n">nichols</span><span class="p">(</span><span class="n">fonction</span><span class="p">)</span>   # <span class="n">Black</span><span class="o">-</span><span class="n">Nichols</span>
+</pre></div>
+<p>Octave vous tracera ainsi de jolis diagrammes <em>kivonbien</em>, exemple :</p>
+<img alt="" class="align-center" src="/static/images/octave/bode.png" style="width: 600px;" />
+<p>Cette possiblité est très sympa quand on doit tester la modélisation de systèmes avec plusieurs vecteurs de coefs.</p>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>Après avoir testé la génération de diagrammes (de Bode notament) avec <tt class="docutils literal">subplot</tt> et ses amis, le paquet <tt class="docutils literal"><span class="pre">octave-control</span></tt> est un pur bonheur.</p>
+<p>En jettant un oeil dans la doc, vous trouverez d'autres fonctions utiles.
+Toujours est il que ces simples fonctions <tt class="docutils literal">tf()</tt> et <tt class="docutils literal">bode()</tt> permettent d'accélerer grandement la modélisation de systèmes sans pour autant requérir un apprentissage long.</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

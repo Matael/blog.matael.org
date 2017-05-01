@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="scripts" />
+		<meta name="tags" content="mail" />
+		<meta name="tags" content="tips" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Diffusion de mail sous Linux</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:28:39+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/scripts.html">scripts</a></li>
+				<li><a href="/tag/mail.html">mail</a></li>
+				<li><a href="/tag/tips.html">tips</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>La plupart du temps, lorsqu'on envoie un mail à une série de destinataires, on préfère que chacun ne voit pas la liste
+des autres destinataires.</p>
+<p>Ici, ce n'était pas le point le plus important sachant que chacun avait déjà les adresses de tous les autres, mais par
+contre, la liste d'adresse étant contenue dans un fichier, il me semblait plus <em>&quot;clean&quot;</em> de scripter la chose.</p>
+<div class="section" id="au-commencement-une-liste-un-message">
+<h2>Au commencement, une liste, un message</h2>
+<p>Admettons que j'ai besoin de diffuser l'adresse d'un nouveau site à toute une série de personnes.</p>
+<p>Je vais rédiger un mail dans un fichier texte (appellons le <tt class="docutils literal">message.txt</tt>) ::</p>
+<pre class="literal-block">
+Ahoy !!
+
+Tu as vu le nouveau site de chats ?
+
+http://superschats.org
+
+Alors ?
+
+matael
+</pre>
+<p><em>PS : je ne sais pas si ce site existe hein ! Je rédige ce billet dans le train ;)</em></p>
+<p>Ensuite, il me faut un fichier (<tt class="docutils literal">adresses.txt</tt>) contenant la liste des destinataires, un par ligne ::</p>
+<pre class="literal-block">
+geek&#64;aww.org
+youpi&#64;example.com
+punka&#64;chat.net
+</pre>
+<p>Nous avons donc deux fichiers, il nous en faut un 3ème : le script.</p>
+</div>
+<div class="section" id="ensuite-le-script">
+<h2>Ensuite, le script</h2>
+<p>Il suffit de savoir utiliser <tt class="docutils literal">for</tt> et <tt class="docutils literal">mail</tt> et on arrive à ça :</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="nv">sujet</span><span class="o">=</span><span class="s2">&quot;:3&quot;</span>
+
+<span class="k">for</span> i in  <span class="k">$(</span> &lt; adresses.txt<span class="k">)</span><span class="p">;</span> <span class="k">do</span>
+    mail -s <span class="s2">&quot;</span><span class="nv">$sujet</span><span class="s2">&quot;</span> <span class="s2">&quot;</span><span class="nv">$i</span><span class="s2">&quot;</span> &lt; message.txt <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;Message envoyé à </span><span class="nv">$i</span><span class="s2">&quot;</span>
+<span class="k">done</span>
+</pre></div>
+<p>On lance ensuite le script comme d'hab et voilà le résultat ::</p>
+<pre class="literal-block">
+$ chmod u+x script.sh
+$ ./script.sh
+Message envoyé à geek&#64;aww.org
+Message envoyé à youpi&#64;example.com
+Message envoyé à punka&#64;chat.net
+</pre>
+<p>Voilà une astuce qui paye pas de mine mais qui peut parfois s'avèrer bien utile...</p>
+<p><strong>EDIT :</strong></p>
+<p>J'ai reçu une mention sur twitter de la part de <strong>&#64;sylvain_soliman</strong> :</p>
+<blockquote>
+It would be safer to quote &quot;$i&quot; in the mail line, and more efficient to replace the cat subprocess by an inline $(&lt; adresses.txt)</blockquote>
+<p>J'ai modifié le script en conséquence. Ce sont en effet deux bonnes pratiques, même si pour le <tt class="docutils literal">$i</tt> il y a peu de
+chance d'avoir un soucis dans ce cas précis.</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

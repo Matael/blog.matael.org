@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="scripts" />
+		<meta name="tags" content="lol" />
+		<meta name="tags" content="tips" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Scripts et Auto-modification</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:28:39+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/scripts.html">scripts</a></li>
+				<li><a href="/tag/lol.html">lol</a></li>
+				<li><a href="/tag/tips.html">tips</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>J'ai récemment eu besoin qu'un de mes script s'ajoute des données (une variable en fait).</p>
+<p>Voilà donc un article (court, <strong>très</strong> court même) pour vous montrer la tête que ça a :</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="k">if</span> <span class="o">[[</span> <span class="nv">$secret</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+    <span class="nb">echo</span> <span class="nv">$secret</span><span class="p">;</span>
+<span class="k">else</span>
+    touch strange2
+    <span class="nb">echo</span> <span class="s2">&quot;#!/bin/bash&quot;</span> &gt;&gt; strange2
+    <span class="nb">echo</span> <span class="s2">&quot;secret=&#39;this is secret&#39;&quot;</span> &gt;&gt; strange2
+    tail -n +2 <span class="nv">$0</span> &gt;&gt; strange2
+    chmod +x strange2
+    mv strange2 <span class="nv">$0</span> <span class="o">&amp;&amp;</span> <span class="nb">exit</span>
+<span class="k">fi</span>
+</pre></div>
+<p>Regardons le code de plus près :</p>
+<ol class="arabic simple">
+<li>le script vérifie si la variable <tt class="docutils literal">$secret</tt> est définie et l'affiche si c'est le cas</li>
+<li>sinon :<ol class="loweralpha">
+<li>il crée un fichier <tt class="docutils literal">strange2</tt></li>
+<li>colle le she-bang dans ce fichier</li>
+<li>y écrit la définition de la variable <tt class="docutils literal">$secret</tt></li>
+<li>se recopie lui même (à partir de la deuxième ligne: <tt class="docutils literal"><span class="pre">-n</span> +2</tt>) dans ce fichier</li>
+<li>rend son clone éxécutable (il aurait été mieux de faire en sorte de lui assigner les mêmes droits que l'original)</li>
+<li>change le nom du clone par son propre nom (contenu dans <tt class="docutils literal">$0</tt>) et quitte</li>
+</ol>
+</li>
+</ol>
+<p>Si on teste le script ::</p>
+<pre class="literal-block">
+$ cat strange.sh
+#!/bin/bash
+
+if [[ $secret ]]; then
+    echo $secret;
+else
+    touch strange2
+    echo &quot;#!/bin/bash&quot; &gt;&gt; strange2
+    echo &quot;secret='this is secret'&quot; &gt;&gt; strange2
+    tail -n +2 $0 &gt;&gt; strange2
+    chmod +x strange2
+    mv strange2 $0 &amp;&amp; exit
+fi
+$ ./strange.sh
+$ cat strange.sh
+#!/bin/bash
+secret='this is secret'
+
+if [[ $secret ]]; then
+    echo $secret;
+else
+    touch strange2
+    echo &quot;#!/bin/bash&quot; &gt;&gt; strange2
+    echo &quot;secret='this is secret'&quot; &gt;&gt; strange2
+    tail -n +2 $0 &gt;&gt; strange2
+    chmod +x strange2
+    mv strange2 $0 &amp;&amp; exit
+fi
+$ ./strange.sh
+this is secret
+</pre>
+<p>... on remarque qu'il s'est bien modifié et qu'au deuxième lancement, il affiche bel et bien de contenu de la variable
+ajoutée.</p>
+<p>Voilà donc un <em>truc</em> pas forcément très très utile, mais rigolo.</p>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

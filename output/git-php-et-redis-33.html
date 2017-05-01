@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="git" />
+		<meta name="tags" content="redis" />
+		<meta name="tags" content="php" />
+		<meta name="tags" content="fac" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Git, PHP et redis 3/3</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:25:43+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/git.html">git</a></li>
+				<li><a href="/tag/redis.html">redis</a></li>
+				<li><a href="/tag/php.html">php</a></li>
+				<li><a href="/tag/fac.html">fac</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Nous avons maintenant le script qui va bien pour git et une base redis
+cool. Plus qu'a intégrer ça dans notre PHP.</p>
+<div class="section" id="phpredis">
+<h2>phpredis</h2>
+<p>Le principal souci ici, est que <a class="reference external" href="http://redis.io">redis</a> n'est pas
+supporté de base par PHP.</p>
+<p>Heureusement, des développeurs bien sympathiques ont créé de jolies
+bibliothèques, <a class="reference external" href="https://github.com/nicolasff/phpredis">phpredis</a> par
+exemple.</p>
+<div class="section" id="installation">
+<h3>Installation</h3>
+<p>Nous aurons besoin de <tt class="docutils literal">phpize</tt> pour l'installation nous allons donc
+installer le paquet <tt class="docutils literal"><span class="pre">php5-dev</span></tt> qui contient notamment cet outil :</p>
+<div class="highlight"><pre><span></span>sudo apt-get install php5-dev
+</pre></div>
+<p>Ensuite quelques commandes suffisent :</p>
+<div class="highlight"><pre><span></span>git clone https://github.com/nicolasff/phpredis.git
+<span class="nb">cd</span> phpredis
+phpize
+./configure
+make
+make <span class="nb">test</span>
+</pre></div>
+<p>PHPRedis est maintenant compilé, reste à l'installer réellement :</p>
+<div class="highlight"><pre><span></span>sudo make install
+</pre></div>
+<p>Normalement tout va bien !</p>
+<p>On active alors le module dans apache :</p>
+<div class="highlight"><pre><span></span>sudo <span class="nb">echo</span> <span class="s2">&quot;extension=redis.so&quot;</span> &gt; /etc/php5/conf.d/redis.ini
+sudo /etc/init.d/apache2 reload
+</pre></div>
+<p>La première commande crée le fichier de configuration contenant la ligne
+adéquate pour l'activation de phpredis. La seconde ne fait que recharger
+apache2 pour qu'il prenne tout ça en compte.</p>
+<p>Vous pouvez bien sûr supprimer les fichiers téléchargés en début
+d'installation :</p>
+<div class="highlight"><pre><span></span>rm -rf phpredis
+</pre></div>
+</div>
+<div class="section" id="modification-du-php">
+<h3>Modification du PHP</h3>
+<p>Le <tt class="docutils literal">README</tt> de <a class="reference external" href="https://github.com/nicolasff/phpredis">phpredis</a>
+nous l'indique clairement, on se connecte à un serveur redis comme suit
+:</p>
+<div class="highlight"><pre><span></span><span class="cp">&lt;?php</span>
+
+<span class="nv">$redis</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Redis</span><span class="p">();</span>
+<span class="nv">$redis</span><span class="o">-&gt;</span><span class="na">connect</span><span class="p">(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">);</span> <span class="c1">// port 6379 implicite</span>
+
+<span class="c1">// ... on fait des trucs ici ...</span>
+
+<span class="nv">$redis</span><span class="o">-&gt;</span><span class="na">close</span><span class="p">();</span> <span class="c1">// on oublie pas de dire au revoir</span>
+
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre></div>
+<p>Ensuite, des méthodes de la classe <tt class="docutils literal">Redis()</tt> implémentent les
+différentes commandes (<tt class="docutils literal">get</tt> notamment).</p>
+<p>Par rapport au PHP de la <a class="reference external" href="/writing/git-php-et-redis-13">première partie</a>,
+on va garder la même structure de boucles imbriquées. On n'oubliera pas
+d'ouvrir la connexion tout au début des boucles (et une seule fois) et
+de la fermer à la fin.</p>
+<p>Pour ce qui est du traitement en plein milieu (au coeur des deux
+boucles), nous allons simplement recréer la clé et récupèrer la donnée
+voulue. Ici, nous nous contentons d'une interrogation du serveur pour
+récupèrer la fameuse ligne :</p>
+<div class="highlight"><pre><span></span><span class="x">$first_line = $redis-&gt;get(&quot;exosfac:&quot;.$folder_name.&quot;/&quot;.$filename.&quot;.mkd&quot;);</span>
+</pre></div>
+<p>Il faut savoir que <tt class="docutils literal">$folder_name</tt> contient le nom du dossier courant
+sans le <tt class="docutils literal">./src/</tt> devant, et que <tt class="docutils literal">$filename</tt> contient le nom du
+fichier sans le <tt class="docutils literal">.mkd</tt>.</p>
+<p>Si nous inluons tout ça dans le fichier PHP, nous arrivons à :</p>
+<div class="highlight"><pre><span></span><span class="cp">&lt;?php</span>
+
+<span class="c1">// Quelques Variables</span>
+<span class="nv">$title</span> <span class="o">=</span> <span class="s1">&#39;Index&#39;</span><span class="p">;</span>
+<span class="nv">$dir</span> <span class="o">=</span> <span class="s1">&#39;./src/*&#39;</span><span class="p">;</span>
+
+<span class="c1">// Affichage du début de la page</span>
+<span class="k">echo</span><span class="s">&lt;&lt;&lt;</span><span class="dl">END</span><span class="s"></span>
+<span class="s">&lt;!doctype html&gt;</span>
+<span class="s">&lt;html lang=&quot;fr&quot;&gt;</span>
+<span class="s">    &lt;head&gt;</span>
+<span class="s">    &lt;title&gt;$title&lt;/title&gt;</span>
+<span class="s">    &lt;meta charset=&quot;utf-8&quot;/&gt;</span>
+<span class="s">    &lt;link rel=&quot;stylesheet&quot; href=&quot;main.css&quot; media=&quot;screen&quot;/&gt;</span>
+<span class="s">    &lt;/head&gt;</span>
+<span class="s">    &lt;body&gt;</span>
+<span class="s">    &lt;header&gt;</span>
+<span class="s">        &lt;p&gt;&lt;a href=&quot;/&quot;&gt;$title&lt;/a&gt;&lt;/p&gt;</span>
+<span class="s">    &lt;/header&gt;</span>
+<span class="s">    &lt;div id=&quot;main_content&quot;&gt;</span>
+<span class="s">        &lt;article&gt;</span>
+
+<span class="dl">END</span><span class="p">;</span>
+
+<span class="c1">// Récupération et affichage du texte de la page</span>
+<span class="nv">$fh</span> <span class="o">=</span> <span class="nb">fopen</span><span class="p">(</span><span class="s2">&quot;index.mkd&quot;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">);</span>
+<span class="k">echo</span> <span class="nx">Markdown</span><span class="p">(</span><span class="nb">fread</span><span class="p">(</span><span class="nv">$fh</span><span class="p">,</span> <span class="nb">filesize</span><span class="p">(</span><span class="s2">&quot;index.mkd&quot;</span><span class="p">)));</span>
+<span class="nb">fclose</span><span class="p">(</span><span class="nv">$fh</span><span class="p">);</span>
+
+<span class="c1">// Connexion à redis</span>
+<span class="nv">$redis</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Redis</span><span class="p">();</span>
+<span class="nv">$redis</span><span class="o">-&gt;</span><span class="na">connect</span><span class="p">(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">);</span>
+
+
+<span class="c1">// Génération de la liste de ressources</span>
+<span class="k">foreach</span> <span class="p">(</span><span class="nb">glob</span><span class="p">(</span><span class="nv">$dir</span><span class="p">)</span> <span class="k">as</span> <span class="nv">$folder</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// trouver le nom du fichier seul</span>
+    <span class="nv">$folder_name</span> <span class="o">=</span> <span class="nb">preg_replace</span><span class="p">(</span><span class="s1">&#39;/^\.\/src\//&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="nv">$folder</span><span class="p">);</span>
+
+    <span class="c1">// titre de la catégorie</span>
+    <span class="k">echo</span> <span class="s2">&quot;&lt;h3&gt;&quot;</span><span class="o">.</span><span class="nb">preg_replace</span><span class="p">(</span><span class="s1">&#39;/^\.\/src\//&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="nv">$folder_name</span><span class="p">)</span><span class="o">.</span><span class="s2">&quot;&lt;/h3&gt;&quot;</span><span class="p">;</span>
+
+    <span class="c1">// le texte de présenttion de la catégorie</span>
+    <span class="nv">$fh</span> <span class="o">=</span> <span class="nb">fopen</span><span class="p">(</span><span class="nv">$folder</span><span class="o">.</span><span class="s2">&quot;/index.mkd&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$fh</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">echo</span> <span class="s1">&#39;&lt;div class=&quot;intro_category&quot;&gt;&#39;</span>
+            <span class="o">.</span><span class="nx">Markdown</span><span class="p">(</span><span class="nb">fread</span><span class="p">(</span><span class="nv">$fh</span><span class="p">,</span> <span class="nb">filesize</span><span class="p">(</span><span class="nv">$folder</span><span class="o">.</span><span class="s2">&quot;/index.mkd&quot;</span><span class="p">)))</span><span class="o">.</span><span class="s1">&#39;&lt;/div&gt;&#39;</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nb">fclose</span><span class="p">(</span><span class="nv">$fh</span><span class="p">);</span>
+
+    <span class="k">echo</span> <span class="s1">&#39;&lt;ul&gt;&#39;</span><span class="p">;</span> <span class="c1">// début de la liste</span>
+
+    <span class="c1">// itération sur les fichiers</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="nb">glob</span><span class="p">(</span><span class="nv">$folder</span><span class="o">.</span><span class="s1">&#39;/*&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nv">$file</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$file</span> <span class="o">==</span> <span class="nv">$folder</span><span class="o">.</span><span class="s1">&#39;/index.mkd&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">continue</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="nv">$filename</span> <span class="o">=</span> <span class="nb">preg_replace</span><span class="p">(</span><span class="s1">&#39;/\.mkd$/&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="nv">$file</span><span class="p">);</span>
+        <span class="nv">$filename</span> <span class="o">=</span> <span class="nb">preg_replace</span><span class="p">(</span><span class="s1">&#39;/^\.\/src\/&#39;</span><span class="o">.</span><span class="nv">$folder_name</span><span class="o">.</span><span class="s1">&#39;\//&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="nv">$filename</span><span class="p">);</span>
+
+        <span class="c1">// récup. de la première ligne</span>
+        <span class="nv">$first_line</span> <span class="o">=</span> <span class="nv">$redis</span><span class="o">-&gt;</span><span class="na">get</span><span class="p">(</span><span class="s2">&quot;exosfac:&quot;</span><span class="o">.</span><span class="nv">$folder_name</span><span class="o">.</span><span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="nv">$filename</span><span class="o">.</span><span class="s2">&quot;.mkd&quot;</span><span class="p">);</span>
+
+        <span class="c1">// affichage</span>
+        <span class="k">echo</span> <span class="s1">&#39;&lt;li&gt;&lt;a href=&quot;/?n=&#39;</span><span class="o">.</span><span class="nv">$folder_name</span><span class="o">.</span><span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="nv">$filename</span><span class="o">.</span><span class="s1">&#39;&quot;&gt;&#39;</span>
+            <span class="o">.</span><span class="nb">preg_replace</span><span class="p">(</span><span class="s1">&#39;#_#&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span><span class="nv">$filename</span><span class="p">)</span><span class="o">.</span><span class="s1">&#39;&lt;/a&gt; - &#39;</span><span class="o">.</span><span class="nv">$first_line</span><span class="o">.</span><span class="s1">&#39;&lt;/li&gt;&#39;</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">echo</span> <span class="s1">&#39;&lt;/ul&gt;&#39;</span><span class="p">;</span> <span class="c1">// fin de liste</span>
+<span class="p">}</span>
+<span class="c1">// fermeture la connexion</span>
+<span class="nv">$redis</span><span class="o">-&gt;</span><span class="na">close</span><span class="p">();</span>
+
+<span class="c1">// Fin de la page</span>
+<span class="k">echo</span><span class="s">&lt;&lt;&lt;</span><span class="dl">END</span><span class="s"></span>
+<span class="s">&lt;/article&gt;</span>
+
+<span class="s">&lt;!-- Commentaires Disqus ici --&gt;</span>
+
+<span class="s">&lt;div style=&quot;clear:both;&quot;&gt;&amp;nbsp;&lt;/div&gt;</span>
+<span class="s">&lt;footer&gt;&lt;p&gt;Powered by mkdizer&lt;/p&gt;&lt;/footer&gt;</span>
+<span class="s">&lt;/body&gt;</span>
+<span class="s">&lt;/html&gt;</span>
+<span class="dl">END</span><span class="p">;</span>
+
+<span class="c1">// EOF</span>
+
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre></div>
+<p>Voilà qui normalement devrait suffir à afficher quelque chose du genre</p>
+<ul class="simple">
+<li>fichier1 - premiere ligne du fichier1</li>
+<li>fichier2 - premiere ligne du fichier2</li>
+<li>fichier3 - premiere ligne du fichier3</li>
+<li>etc...</li>
+</ul>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<div class="figure align-right">
+<img alt="Architecture à la fin" src="/images/redis/archi2.png" style="width: 300px;" />
+</div>
+<p>Nous avons vu au cours de ces trois articles un moyen de mettre
+automatiquement à jour une base de donnée redis après un <tt class="docutils literal">git pull</tt>.</p>
+<p>Nous avons aussi réussi à joindre PHP et redis au moyen de l'ajout d'un
+module à apache.</p>
+<p>Toutes ces actions ont finalement abouti à l'architecture présentée
+ci-contre.</p>
+<p>Sachez enfin que le site utilisant ce système est accessible à
+<a class="reference external" href="http://exos.matael.org">http://exos.matael.org</a> et que cela a vraiment réduit l'utilisation du
+disque et du processeur.</p>
+<p>Parfois, il suffit d'un petit script et d'une légère modif du système
+existant pour vraiment augmenter les performances !</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

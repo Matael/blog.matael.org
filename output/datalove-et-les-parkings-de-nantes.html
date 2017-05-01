@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="python" />
+		<meta name="tags" content="matplotlib" />
+		<meta name="tags" content="datalove" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Datalove et les parkings de Nantes</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:28:40+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/python.html">python</a></li>
+				<li><a href="/tag/matplotlib.html">matplotlib</a></li>
+				<li><a href="/tag/datalove.html">datalove</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Au dernier Jelly manceau, le HAUM avait squatté une table et bidouillé des trucs toute la journée.</p>
+<p>En plus de tout ça, pas mal de discussions ont tourné (c'était un peu l'objectif de la journée) autour de sujets
+divers, dont l'OpenData.</p>
+<p>Il faut savoir que ces dernières années, la région Pays De la Loire (PDL pour les intimes) s'est mise à l'OpenData.
+On accède aux données <em>via</em> le <a class="reference external" href="http://data.paysdelaloire.fr/accueil/">portail</a> dédié et on peut faire <em>joujou</em> ensuite avec les jeux de données proposés.</p>
+<img alt="" class="align-center" src="/static/images/dataporn/places.png" />
+<p>Nous reviendrons sur 3 points au long de l'article :</p>
+<ul class="simple">
+<li>l'accès aux données et l'obtention d'une clé API</li>
+<li>le bricolage d'un script d'exemple d'utilisation</li>
+<li>quelques remarques sur l'initiative et le portail en lui même</li>
+</ul>
+<div class="section" id="acces">
+<h2>Accès</h2>
+<p>Une fois arrivé sur le <a class="reference external" href="http://data.paysdelaloire.fr/accueil/">portail</a> OpenData de la région, je vous conseille de créer un compte.</p>
+<p>Une fois celui-ci activé, vous pourrez vous connecter et trouver, dans la rubrique <strong>Mon compte &gt; Nouvelle Application</strong>
+un formulaire pour créer une nouvelle appli.</p>
+<p>A l'envoi du formulaire, une clé d'API vous sera comuniquée. Vous pourrez aussi la retrouver dans <strong>Mon compte &gt; Liste
+de mes applications</strong>.</p>
+<p>L'étape suivante consiste à ... lire cette foutue doc !</p>
+<p>En fait, une page en particulier «explique» le <a class="reference external" href="http://data.paysdelaloire.fr/donnees/fonctionnement-de-lapi/documentation-de-lapi/">fonctionnement de l'API</a> et une autre comment choisir le <a class="reference external" href="http://data.paysdelaloire.fr/donnees/choix-des-formats/">format de
+retour</a>.</p>
+<p>Deux autres pages sont vraiment utiles :</p>
+<ul class="simple">
+<li>la page expliquant la <a class="reference external" href="http://data.paysdelaloire.fr/licence/">licence</a> ODbL utilisée pour les données</li>
+<li>la page des <a class="reference external" href="http://data.paysdelaloire.fr/donnees/">données</a></li>
+</ul>
+<p>Je vous conseille de les parcourir pour vous faire une idée de ce qui y est dit.</p>
+<div class="section" id="exemple-de-commande-les-parkings">
+<h3>Exemple de commande : les parkings</h3>
+<p>Pour l'accès aux données temps réel des parkings, on commence par regarder <a class="reference external" href="http://data.paysdelaloire.fr/donnees/detail/disponibilite-dans-les-parkings-publics-de-nantes-metropole/">cette page</a>.</p>
+<p>On y apprend (entre autres) le nom de la commande correspondante : <tt class="docutils literal">getDisponibiliteParkingsPublics</tt>.
+L'URL d'appel sera donc : <a class="reference external" href="http://data.nantes.fr/api/getDisponibiliteParkingsPublics/1.0/MA_CLE_API/?output=json">http://data.nantes.fr/api/getDisponibiliteParkingsPublics/1.0/MA_CLE_API/?output=json</a>
+(pour un retour en JSON).</p>
+<p>Cette <a class="reference external" href="http://data.paysdelaloire.fr/donnees/fonctionnement-de-lapi/getdisponibiliteparkingspublics/">autre page</a> décrit les données renvoyées : pour un graphe du taux de remplissage par parking, nous aurons
+besoin de <tt class="docutils literal">Grp_nom</tt> et <tt class="docutils literal">Grp_disponible</tt> et <tt class="docutils literal">Grp_exploitation</tt>.</p>
+</div>
+</div>
+<div class="section" id="script">
+<h2>Script</h2>
+<p>Bien sûr, nous ferons tout ça en Python (parce que le python, c'est cool).</p>
+<p>Une partie des commentaires du code sont en anglais, en effet, j'ai codé ce script et commenté en anglais (comme souvent) et je
+n'ai pas eu envie de traduire.</p>
+<p>Attention enfin, ce script est fait en <strong>Python 3</strong>. Si quelqu'un a une version pour Python 2.7 à proposer, je
+l'ajouterais volontiers à l'article.</p>
+<p>Commençons par le commencement : les <em>imports</em>.</p>
+<div class="highlight"><pre><span></span><span class="c1"># pour le exit() en cas d&#39;erreur</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="c1"># pour l&#39;accès au résultat</span>
+<span class="kn">from</span> <span class="nn">json</span> <span class="kn">import</span> <span class="n">loads</span>
+<span class="c1"># dialogue avec l&#39;API</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span>
+<span class="c1"># graphe</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+
+    <span class="c1"># faire des trucs...</span>
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span> <span class="n">main</span><span class="p">()</span>
+</pre></div>
+<p>Reste à remplir notre <tt class="docutils literal">main()</tt>. D'abord, quelques infos nous concernant :</p>
+<div class="highlight"><pre><span></span><span class="n">api_key</span> <span class="o">=</span> <span class="s1">&#39;MA_CLE_API&#39;</span> <span class="c1"># mettez la votre</span>
+<span class="n">base_url</span> <span class="o">=</span> <span class="s1">&#39;http://data.nantes.fr/api/&#39;</span>
+<span class="n">command</span> <span class="o">=</span> <span class="s1">&#39;getDisponibiliteParkingsPublics/1.0/&#39;</span>
+<span class="n">format</span> <span class="o">=</span> <span class="s1">&#39;/?output=json&#39;</span>
+
+<span class="c1"># recreate full url</span>
+<span class="n">full_url</span> <span class="o">=</span> <span class="s2">&quot;{}{}{}{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">base_url</span><span class="p">,</span>
+    <span class="n">command</span><span class="p">,</span>
+    <span class="n">api_key</span><span class="p">,</span>
+    <span class="n">format</span>
+<span class="p">)</span>
+</pre></div>
+<p>On va chercher les données en ligne et quitter en cas d'erreur :</p>
+<div class="highlight"><pre><span></span><span class="c1"># get the data :</span>
+<span class="n">data_handle</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">full_url</span><span class="p">)</span>
+
+<span class="c1"># convertir en python</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">data_handle</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+
+<span class="c1"># handle eventual errors</span>
+<span class="c1"># les erreurs éventuelles sont détaillées dans le retour</span>
+<span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;opendata&#39;</span><span class="p">][</span><span class="s1">&#39;answer&#39;</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">][</span><span class="s1">&#39;@attributes&#39;</span><span class="p">][</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;0&quot;</span><span class="p">:</span>
+    <span class="c1"># on affiche le message d&#39;erreur retourné</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;A error occured :</span><span class="se">\n\n</span><span class="s2">{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;opendata&#39;</span><span class="p">][</span><span class="s1">&#39;answer&#39;</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">][</span><span class="s1">&#39;@attributes&#39;</span><span class="p">][</span><span class="s1">&#39;code&#39;</span><span class="p">]</span>
+    <span class="p">))</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+<p>On raccourcit un peu la chaîne de dicos générée par l'API et on récupère les données nous intéressant :</p>
+<div class="highlight"><pre><span></span><span class="c1"># shorten a bit this fucking hash-ception</span>
+<span class="n">parkings</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;opendata&#39;</span><span class="p">][</span><span class="s1">&#39;answer&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;Groupes_Parking&#39;</span><span class="p">][</span><span class="s1">&#39;Groupe_Parking&#39;</span><span class="p">]</span>
+
+<span class="c1"># extract places</span>
+<span class="n">lien_nom_places</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">parkings</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">_</span><span class="p">[</span><span class="s1">&#39;Grp_exploitation&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;0&#39;</span><span class="p">:</span>
+        <span class="n">lien_nom_places</span><span class="p">[</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;Grp_nom&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lien_nom_places</span><span class="p">[</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;Grp_nom&#39;</span><span class="p">]]</span> <span class="o">=</span> \
+                <span class="mf">100.0</span><span class="o">-</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;Grp_disponible&#39;</span><span class="p">])</span><span class="o">/</span><span class="nb">int</span><span class="p">(</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;Grp_exploitation&#39;</span><span class="p">]))</span><span class="o">*</span><span class="mi">100</span>
+
+<span class="c1"># on sépare noms et places tout en gardant le lien de l&#39;indice :</span>
+<span class="c1"># noms[i] correspond à places[i]</span>
+<span class="n">noms</span> <span class="o">=</span> <span class="p">[</span><span class="n">_</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">lien_nom_places</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+<span class="n">places</span> <span class="o">=</span> <span class="p">[</span><span class="n">lien_nom_places</span><span class="p">[</span><span class="n">_</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">noms</span><span class="p">]</span>
+</pre></div>
+<p>Une première version du script utilisait les <em>Dict-comprehension</em> pour remplir le dico <tt class="docutils literal">lien_nom_places</tt>, voilà la
+ligne qui était utilisée :</p>
+<div class="highlight"><pre><span></span><span class="n">lien_nom_places</span> <span class="o">=</span> <span class="p">{</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;Grp_nom&#39;</span><span class="p">]:</span>
+                   <span class="p">(</span><span class="mf">100.0</span><span class="o">-</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;Grp_disponible&#39;</span><span class="p">])</span><span class="o">/</span><span class="nb">int</span><span class="p">(</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;Grp_exploitation&#39;</span><span class="p">]))</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+                   <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">parkings</span><span class="p">}</span>
+</pre></div>
+<p>Le codeur remarquera qu'avec ce genre de contruction, on parie sur le fait que <tt class="docutils literal"><span class="pre">_['Grp_exploitation']</span></tt> ne sera jamais
+nul, ce qui est faux. Dans la nouvelle version, si ce champ est nul, on considère qu'il ne reste plus de places et on
+passe la valeur du dico à 100 (remplissage à 100%).</p>
+<div class="section" id="dict-what">
+<h3>Dict-what ?</h3>
+<p><em>Dict-comprehension</em>. Il y a une page là-dessus ici : <a class="reference external" href="http://www.python.org/dev/peps/pep-0274/">PEP274</a>.</p>
+<p>En gros, si vous connaissez un peu les <em>list-comprehensions</em>, ce n'est pas beaucoup plus compliqué.</p>
+<p>Avec les <em>list-comprehensions</em> (deux dernières lignes du code précédent), vous pouviez faire :</p>
+<div class="highlight"><pre><span></span><span class="n">noms</span> <span class="o">=</span> <span class="p">[</span><span class="n">_</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">lien_nom_places</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+</pre></div>
+<p>Et cela créait alors une vraie liste contenant les clés du dico <tt class="docutils literal">lien_nom_places</tt>.</p>
+<p>Les dict-comprehensions étendent cette syntaxe condensée aux dictionnaires. Par exemple, pour inverser clés et valeurs
+d'un dico <tt class="docutils literal">a</tt> (les valeurs deviennent les clés et leur clé leur valeur) :</p>
+<div class="highlight"><pre><span></span><span class="n">b</span> <span class="o">=</span> <span class="p">{</span> <span class="n">a</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">a</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+</pre></div>
+<p>Et <tt class="docutils literal">b</tt> est alors le dico inversé.</p>
+<p>Ici, on met comme clé le nom du parking (unique) et comme valeur un pourcentage.</p>
+<div class="highlight"><pre><span></span><span class="n">lien_nom_places</span> <span class="o">=</span> <span class="p">{</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;Grp_nom&#39;</span><span class="p">]:</span>
+                   <span class="p">(</span><span class="mf">100.0</span><span class="o">-</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;Grp_disponible&#39;</span><span class="p">])</span><span class="o">/</span><span class="nb">int</span><span class="p">(</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;Grp_exploitation&#39;</span><span class="p">]))</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+                   <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">parkings</span><span class="p">}</span>
+</pre></div>
+<p>La deuxième ligne prend 100 et y retranche le pourcentage de places libres (<tt class="docutils literal"><span class="pre">(int(_['Grp_disponible'])/int(_['Grp_exploitation']))*100</span></tt>).
+L'utilisation de la fonction <tt class="docutils literal">int()</tt> (deux fois) ne facilite pas la lecture mais c'était toutefois nécessaire, l'API ne renvoyant que des chaînes.</p>
+<p>Reste à créer le graphe qui va bien (admirable en haut de page) :</p>
+<div class="highlight"><pre><span></span><span class="c1"># recreer un axe des abscisses</span>
+<span class="n">width</span> <span class="o">=</span> <span class="mf">0.8</span> <span class="c1"># width of a bar</span>
+<span class="n">left</span> <span class="o">=</span> <span class="p">[</span><span class="n">_</span><span class="o">*</span><span class="n">width</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">places</span><span class="p">))]</span>
+
+<span class="c1"># le bargraph en lui-même</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">places</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">)</span>
+
+<span class="c1"># les noms des parkings</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">noms</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">85</span><span class="p">)</span>
+
+<span class="c1"># la grille</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">)</span>
+
+<span class="c1"># le titre</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Pourcentage de remplissage des parkings de Nantes&quot;</span><span class="p">)</span>
+
+<span class="c1"># ajustement au plus proche de l&#39;image sans la rogner</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+<span class="c1"># sauvegarde !!</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;places&#39;</span><span class="p">)</span>
+</pre></div>
+<p>Finalement, une petite soixantaine de lignes bien aérées pour arriver à un joli graphe, c'est honnête.</p>
+</div>
+<div class="section" id="script-complet">
+<h3>Script complet</h3>
+<p>Pour ceux qui préfèrent lire au kilomètre :</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">#-*- coding: utf8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">json</span> <span class="kn">import</span> <span class="n">loads</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+
+    <span class="n">api_key</span> <span class="o">=</span> <span class="s1">&#39;5H7IGDGF78UQAOF&#39;</span>
+    <span class="n">base_url</span> <span class="o">=</span> <span class="s1">&#39;http://data.nantes.fr/api/&#39;</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="s1">&#39;getDisponibiliteParkingsPublics/1.0/&#39;</span>
+    <span class="n">format</span> <span class="o">=</span> <span class="s1">&#39;/?output=json&#39;</span>
+
+    <span class="c1"># recreate full url</span>
+    <span class="n">full_url</span> <span class="o">=</span> <span class="s2">&quot;{}{}{}{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">base_url</span><span class="p">,</span>
+        <span class="n">command</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">,</span>
+        <span class="n">format</span>
+    <span class="p">)</span>
+
+    <span class="c1"># get the data :</span>
+    <span class="n">data_handle</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">full_url</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">data_handle</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+
+    <span class="c1"># handle eventual errors</span>
+    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;opendata&#39;</span><span class="p">][</span><span class="s1">&#39;answer&#39;</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">][</span><span class="s1">&#39;@attributes&#39;</span><span class="p">][</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;0&quot;</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;A error occured :</span><span class="se">\n\n</span><span class="s2">{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;opendata&#39;</span><span class="p">][</span><span class="s1">&#39;answer&#39;</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">][</span><span class="s1">&#39;@attributes&#39;</span><span class="p">][</span><span class="s1">&#39;code&#39;</span><span class="p">]</span>
+        <span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># shorten a bit this fucking hash-ception</span>
+    <span class="n">parkings</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;opendata&#39;</span><span class="p">][</span><span class="s1">&#39;answer&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;Groupes_Parking&#39;</span><span class="p">][</span><span class="s1">&#39;Groupe_Parking&#39;</span><span class="p">]</span>
+
+
+    <span class="c1"># extract places</span>
+    <span class="n">lien_nom_places</span> <span class="o">=</span> <span class="p">{</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;Grp_nom&#39;</span><span class="p">]:</span>
+                       <span class="p">(</span><span class="mf">100.0</span><span class="o">-</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;Grp_disponible&#39;</span><span class="p">])</span><span class="o">/</span><span class="nb">int</span><span class="p">(</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;Grp_exploitation&#39;</span><span class="p">]))</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+                       <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">parkings</span><span class="p">}</span>
+    <span class="n">noms</span> <span class="o">=</span> <span class="p">[</span><span class="n">_</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">lien_nom_places</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+    <span class="n">places</span> <span class="o">=</span> <span class="p">[</span><span class="n">lien_nom_places</span><span class="p">[</span><span class="n">_</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">noms</span><span class="p">]</span>
+
+    <span class="c1"># recreate a x-axis</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="mf">0.8</span> <span class="c1"># width of a bar</span>
+    <span class="n">left</span> <span class="o">=</span> <span class="p">[</span><span class="n">_</span><span class="o">*</span><span class="n">width</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">places</span><span class="p">))]</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">places</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">noms</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">85</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Pourcentage de remplissage des parkings de Nantes&quot;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;places&#39;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span> <span class="n">main</span><span class="p">()</span>
+</pre></div>
+<p><strong>Feel free to hack that script :</strong> <a class="reference external" href="https://gist.github.com/4651025">https://gist.github.com/4651025</a> <strong>!</strong></p>
+</div>
+</div>
+<div class="section" id="remarques">
+<h2>Remarques</h2>
+<p>C'est donc assez cool d'avoir accès à un peu de données concernant la région.</p>
+<p>Eternel instatisfait, j'ai quand même quelques remarques à formuler :</p>
+<ul class="simple">
+<li>Le site est <strong>anti-ergonomique</strong> au possible. Je me perds courament dedans, c'est un véritable dédale et on a du mal à
+trouver l'info recherché rapidement.</li>
+<li>Certains <strong>bugs</strong> du site sont assez étranges (problèmes de connexion, liens morts en interne, pages d'erreur bizarres,
+etc....). Pas forcément une bonne chose...</li>
+<li>Le <strong>design</strong> est soit trop limité pour un site de promotion soit trop développé/coloré pour une doc. Si on veut une
+simple doc présentée clairement, un truc façon <a class="reference external" href="https://readthedocs.org/">ReadTheDocs</a> serait encore le mieux.</li>
+</ul>
+<p>Il y a aussi des bons points non négligeables :</p>
+<ul class="simple">
+<li>proposer plusieurs formats est un très bon point. Proposer un outil permettant de visualiser les jeux <em>à la volée</em>
+serait la panacée.</li>
+<li>le fait de proposer des clés étrangères liant les jeux est une excellente chose qui sera utile pour recouper les
+données entre elles au besoin.</li>
+<li>les données temps réel sont un vrai plus. Mais, messieurs/dames les concepteurs(trices), pourquoi ne pas avoir
+proposé de <em>Streaming API</em> pour ça ?</li>
+</ul>
+<p>Finalement, l'initiative semble plutôt bien partie ! Reste à ce que le nombre de jeux de données augmente encore un peu
+et que les entrepreneurs s'y mettent.</p>
+<p>Enfin, il faudra aussi que la <em>région tout entière</em> s'y mette, parce que pour l'instant, c'est très <em>Nantes-centric</em>.</p>
+<p>Alors ? Le Mans, Angers, La Roche s/ Yon ? Quand est ce que vous rejoignez le mouvement ?</p>
+<p><em>PS: non, les petits portails opendata maison comme</em> <a class="reference external" href="http://www.lemans.fr/page.do?t=2&amp;uuid=16CB26C7-550EA533-5AE8381B-D7A64AF8">celui du Mans</a> <em>ne comptent pas. Si on fait un truc régional alors,
+faut que tout le monde s'y mette !</em></p>
+<p><em>PPS : merci à A. la relectrice !</em></p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

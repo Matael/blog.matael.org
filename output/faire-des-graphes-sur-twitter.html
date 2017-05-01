@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="python" />
+		<meta name="tags" content="twitter" />
+		<meta name="tags" content="matplotlib" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Faire des graphes sur twitter</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:28:40+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/python.html">python</a></li>
+				<li><a href="/tag/twitter.html">twitter</a></li>
+				<li><a href="/tag/matplotlib.html">matplotlib</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Après un évènement organisé à la CCI au Mans (un Jelly lors de la WorldWide Jelly Week), je me suis dit que ça pouvait
+être intéressant de savoir qui avait le plus utilisé le <em>hashtag</em> proposé par les organisateurs : <a class="reference external" href="https://twitter.com/search?q=%23jellylemans&amp;src=typd">#jellyLeMans</a>.</p>
+<p>On y était présent avec le HAUM, le jeune hackerspace manceau, mais comme vous allez le voir, on est pas vraiment dans
+le TOP 10 des utilisateurs du <em>hashtag</em>.</p>
+<div class="section" id="l-objectif">
+<h2>L'objectif</h2>
+<p>On cherche à générer un graphe (genre <em>pie chart</em>) des gens qui ont tweeté avec le hashtag <strong>#JellyLeMans</strong>.
+Vu qu'un certains nombre de personnes l'ont utilisé, on se contentera de prendre en compte ceux ayant tweeté un plus
+grand nombre de fois que la moyenne.</p>
+</div>
+<div class="section" id="twitter-time">
+<h2>Twitter Time</h2>
+<p>L'API de recherche pour twitter est assez simple : pas besoin de <em>token</em> ou que sais-je, de simples requêtes HTTP
+suffisent. Il faut savoir que l'API a quelques limitations,... on ne s'en préocupera pas ici, mais si vous vous posez
+des questions regardez sur la page <a class="reference external" href="https://dev.twitter.com/docs/using-search">Using The Twitter Search API</a>.</p>
+<p>La beauté de python tient probablement dans le nombre et la qualité de ses modules (en plus d'un langage facilement
+lisible). On trouvera sans soucis le module <a class="reference external" href="http://pypi.python.org/pypi/twitter/">twitter</a> qui nous permet d'utiliser l'API Twitter sans s'inquiéter des
+détails techniques.</p>
+<p>Celui ci est téléchargeable sur pypi (ou via <em>pip</em> ou <em>easy_install</em>) mais aussi directement dans les paquets de
+certaines distros.</p>
+<p>A noter que le script que je propose est fait pour Python 3. Il semblerait toutefois que celui fonctionne aussi sur
+Python 2.7 (pas testé toutefois...).</p>
+<p>La récupération de tweets correspondant à une recherche est simple avec ce module :</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">twitter</span> <span class="kn">import</span> <span class="n">Twitter</span>
+
+<span class="c1"># on instancie la connexion à l&#39;API de recherche</span>
+<span class="n">twlk</span> <span class="o">=</span> <span class="n">Twitter</span><span class="p">(</span><span class="n">domain</span><span class="o">=</span><span class="s2">&quot;search.twitter.com&quot;</span><span class="p">)</span>
+
+<span class="n">hashtag</span> <span class="o">=</span> <span class="s2">&quot;#jellylemans&quot;</span>
+
+<span class="c1"># res contient une structure (dico en fait)</span>
+<span class="c1"># avec une série d&#39;infos sur la requête</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">twlk</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">hashtag</span><span class="p">)</span>
+</pre></div>
+<p>L'inconvénient, c'est qu'on est ainsi limités une vingtaine de tweets...</p>
+<p>On peut ruser en utilisant une des clés du dico de retour : <cite>next_page`</cite> qui n'existe que si une autre page existe (la
+recherche ainsi que le reste des API permettant la récupération de beaucoup de tweets est paginée).</p>
+<p>On utilise alors une boucle pour en récupérer le maximum :</p>
+<div class="highlight"><pre><span></span><span class="c1"># On cherche à récupérer les noms d&#39;users et leur nombre de tweet</span>
+<span class="n">users_count</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">users</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># genere une KeyError au besoin (si dernière page)</span>
+    <span class="k">while</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;next_page&#39;</span><span class="p">]:</span>
+
+        <span class="c1"># pour chaque tweet renvoyé</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]:</span>
+
+            <span class="c1"># si on a pas encore eu de tweet de cet @user,</span>
+            <span class="c1"># on l&#39;ajoute à la liste et au dico</span>
+            <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;from_user&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">users</span><span class="p">:</span>
+                <span class="n">users</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;from_user&#39;</span><span class="p">])</span>
+                <span class="n">users_count</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;from_user&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c1"># on incrément le compteur (dans le dico)</span>
+            <span class="n">users_count</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;from_user&#39;</span><span class="p">]]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># on passe res à la page suivante</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">twlk</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">hashtag</span><span class="p">,</span> <span class="n">page</span><span class="o">=</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;page&#39;</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># s&#39;il s&#39;agit de la dernière page</span>
+<span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+    <span class="k">pass</span> <span class="c1"># on abandonne sans rien dire</span>
+</pre></div>
+<p>La première question pourrait être : mais pourquoi faire une liste <strong>et</strong> un dico pour faire nos comptes ?</p>
+<p>Intuitivement, je me suis dit que faire :</p>
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">liste</span><span class="p">:</span>
+    <span class="c1">#...</span>
+</pre></div>
+<p>serait plus rapide que :</p>
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dico</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="c1">#...</span>
+</pre></div>
+<p>Après vérification (regarder la fonction magique <tt class="docutils literal">%%timeit</tt> sur IPython, c'est assez simple), j'ai noté qu'il y avait
+effectivement une petite différence (pas énorme mais j'avais une liste et un dico de quelques dixaines d'éelements/de
+couples) donc rien de vraiment représentatif).</p>
+<p>Reste à ne conserver que les utilisateurs ayant tweeté plus que la moyennne :</p>
+<div class="highlight"><pre><span></span><span class="c1"># on récupère le nombre d&#39;users</span>
+<span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">users_count</span><span class="p">)</span>
+<span class="c1"># on calcule la moyenne</span>
+<span class="n">moy</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">users_count</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="o">/</span><span class="n">count</span>
+
+<span class="c1"># dans une v1, ça permettait de choisir ou placer la barre :</span>
+<span class="c1">#   - 1.0 : on garde au dessus de la moyenne</span>
+<span class="c1">#   - 2.0 : on garde au dessus de deux fois la moyenne, etc...</span>
+<span class="n">ratio</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+<span class="c1"># on fait une liste pour les résultats et une pour les users</span>
+<span class="c1"># pour le graphe, il faudra que ce soit séparé</span>
+<span class="n">final_count</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">users</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># on réutilise la variable</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">users_count</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>    <span class="c1"># peut importe le temps que ça prend,</span>
+                                <span class="c1"># c&#39;est calculé qu&#39;une fois</span>
+    <span class="k">if</span> <span class="n">users_count</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">moy</span><span class="o">*</span><span class="n">ratio</span><span class="p">:</span>
+        <span class="c1"># on ajoute ceux dépassant ratio*moy à la liste users et leur</span>
+        <span class="c1"># nombre de tweet à final_count</span>
+        <span class="n">final_count</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">users_count</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">users</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+<p>En utilisant les Dict Comprehension, il y aurait surement eu moyen de réduire ça a une seule ligne, mais tant pis ;).</p>
+</div>
+<div class="section" id="graphe">
+<h2>Graphe !</h2>
+<p>Pour la génération du graphe, on utilisera la <a class="reference external" href="http://matplotlib.org/">MatPlotLib</a>. Si vous n'avez pas déjà installé ce module hyper pratique
+pour la visualisation de données en 2D/3D, je vous conseille de le faire au plus vite !</p>
+<p>Pour Arch, cette commande devrait suffir ::</p>
+<pre class="literal-block">
+$ sudo pacman -S python-matplotlib
+</pre>
+<p>Pour Debian/Ubuntu, il me semble que le paquet est installable via ::</p>
+<pre class="literal-block">
+$ sudo apt-get install python3-matplotlib
+</pre>
+<p>Une fois que c'est fait, il ne reste qu'a l'utiliser.</p>
+<p>Un outil pour faire des <em>pie charts</em> est déjà présent dans la lib :</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span>
+
+<span class="c1"># on ajoute un pie chart à l&#39;espace de pyplot</span>
+<span class="n">pyplot</span><span class="o">.</span><span class="n">pie</span><span class="p">(</span>
+    <span class="n">final_count</span><span class="p">,</span>            <span class="c1"># param1 : les données à afficher</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">users</span><span class="p">,</span>           <span class="c1"># les labels (ici les noms d&#39;utilisateurs)</span>
+    <span class="n">colors</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">),</span>  <span class="c1"># les couleurs a utiliser (je sais c&#39;est pas beau)</span>
+    <span class="n">labeldistance</span><span class="o">=</span><span class="mf">1.05</span>      <span class="c1"># distance graphe/label</span>
+<span class="p">)</span>
+
+<span class="c1"># le title à utiliser</span>
+<span class="n">pyplot</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Qui a le plus tweete {} ?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hashtag</span><span class="p">))</span>
+
+<span class="c1"># et on enregsitre (l&#39;extension .png est ajoutées automatiquement)</span>
+<span class="n">pyplot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;pie1&quot;</span><span class="p">)</span>
+</pre></div>
+<p>Juste à noter que pour <tt class="docutils literal">labeldistance</tt>, une distance de 1 signifie que labels et graphe se touchent.</p>
+</div>
+<div class="section" id="combo-script-complet">
+<h2>Combo script complet</h2>
+<p>Juste pour avoir le script complet au moins une fois :</p>
+<div class="highlight"><pre><span></span><span class="c1"># -*- coding:utf8 -*-</span>
+<span class="kn">from</span> <span class="nn">twitter</span> <span class="kn">import</span> <span class="n">Twitter</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span>
+
+<span class="c1"># on instancie la connexion à l&#39;API de recherche</span>
+<span class="n">twlk</span> <span class="o">=</span> <span class="n">Twitter</span><span class="p">(</span><span class="n">domain</span><span class="o">=</span><span class="s2">&quot;search.twitter.com&quot;</span><span class="p">)</span>
+
+<span class="n">hashtag</span> <span class="o">=</span> <span class="s2">&quot;#jellylemans&quot;</span>
+
+<span class="c1"># res contient une structure (dico en fait)</span>
+<span class="c1"># avec une série d&#39;infos sur la requête</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">twlk</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">hashtag</span><span class="p">)</span>
+
+<span class="c1"># On cherche à récupérer les noms d&#39;users et leur nombre de tweet</span>
+<span class="n">users_count</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">users</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># genere une KeyError au besoin (si dernière page)</span>
+    <span class="k">while</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;next_page&#39;</span><span class="p">]:</span>
+
+        <span class="c1"># pour chaque tweet renvoyé</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]:</span>
+
+            <span class="c1"># si on a pas encore eu de tweet de cet @user,</span>
+            <span class="c1"># on l&#39;ajoute à la liste et au dico</span>
+            <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;from_user&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">users</span><span class="p">:</span>
+                <span class="n">users</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;from_user&#39;</span><span class="p">])</span>
+                <span class="n">users_count</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;from_user&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c1"># on incrément le compteur (dans le dico)</span>
+            <span class="n">users_count</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;from_user&#39;</span><span class="p">]]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># on passe res à la page suivante</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">twlk</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">hashtag</span><span class="p">,</span> <span class="n">page</span><span class="o">=</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;page&#39;</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># s&#39;il s&#39;agit de la dernière page</span>
+<span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+    <span class="k">pass</span> <span class="c1"># on abandonne sans rien dire</span>
+
+
+<span class="c1"># on récupère le nombre d&#39;users</span>
+<span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">users_count</span><span class="p">)</span>
+<span class="c1"># on calcule la moyenne</span>
+<span class="n">moy</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">users_count</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="o">/</span><span class="n">count</span>
+
+<span class="c1"># dans une v1, ça permettait de choisir ou placer la barre :</span>
+<span class="c1">#   - 1.0 : on garde au dessus de la moyenne</span>
+<span class="c1">#   - 2.0 : on garde au dessus de deux fois la moyenne, etc...</span>
+<span class="n">ratio</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+<span class="c1"># on fait une liste pour les résultats et une pour les users</span>
+<span class="c1"># pour le graphe, il faudra que ce soit séparé</span>
+<span class="n">final_count</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">users</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># on réutilise la variable</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">users_count</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>    <span class="c1"># peut importe le temps que ça prend,</span>
+                                <span class="c1"># c&#39;est calculé qu&#39;une fois</span>
+    <span class="k">if</span> <span class="n">users_count</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">moy</span><span class="o">*</span><span class="n">ratio</span><span class="p">:</span>
+        <span class="c1"># on ajoute ceux dépassant ratio*moy à la liste users et leur</span>
+        <span class="c1"># nombre de tweet à final_count</span>
+        <span class="n">final_count</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">users_count</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">users</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+
+
+<span class="c1"># on ajoute un pie chart à l&#39;espace de pyplot</span>
+<span class="n">pyplot</span><span class="o">.</span><span class="n">pie</span><span class="p">(</span>
+    <span class="n">final_count</span><span class="p">,</span>            <span class="c1"># param1 : les données à afficher</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">users</span><span class="p">,</span>           <span class="c1"># les labels (ici les noms d&#39;utilisateurs)</span>
+    <span class="n">colors</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">),</span>  <span class="c1"># les couleurs a utiliser (je sais c&#39;est pas beau)</span>
+    <span class="n">labeldistance</span><span class="o">=</span><span class="mf">1.05</span>      <span class="c1"># distance graphe/label</span>
+<span class="p">)</span>
+
+<span class="c1"># le title à utiliser</span>
+<span class="n">pyplot</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Qui a le plus tweete {} ?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hashtag</span><span class="p">))</span>
+
+<span class="c1"># et on enregsitre (l&#39;extension .png est ajoutées automatiquement)</span>
+<span class="n">pyplot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;pie1&quot;</span><span class="p">)</span>
+</pre></div>
+<p>Vous pouvez aussi le <em>forker</em> directement depuis Gist : <a class="reference external" href="https://gist.github.com/4537364">#jellylemans &#64; Gist</a></p>
+<p>Pour le résultat final, ça donne ça :</p>
+<img alt="" class="align-center" src="/static/images/twitter_graphe/graphe.png" />
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<header class=detail-list-header>
+	<h1>Authors</h1>
+</header>
+<ul id=tagcloud>
+	{%- for author, articles in authors|sort %}
+	<li class=tag><a href="{{ SITEURL }}/{{ author.url }}"><span class=tagname>{{ author }}</a> </span><span class=tagcount>({{ articles|count }})</span></li>
+	{% else %}
+	<li class=tag><span class=accent>Oh... nobody wrote anything. Sorry.</span></li>
+	{% endfor %}
+</ul>
+{% endblock %}

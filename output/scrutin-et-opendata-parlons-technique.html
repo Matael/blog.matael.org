@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="opendata" />
+		<meta name="tags" content="LeMans" />
+		<meta name="tags" content="haum" />
+		<meta name="tags" content="python" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Scrutin et OpenData : parlons technique...</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:28:42+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/opendata.html">opendata</a></li>
+				<li><a href="/tag/lemans.html">LeMans</a></li>
+				<li><a href="/tag/haum.html">haum</a></li>
+				<li><a href="/tag/python.html">python</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Ce n'est pas la première fois que je me penche sur les données du Mans. La fois dernière, c'est les données de la <a class="reference external" href="/writing/cyber-ouvre-boite-opendata-ou-pas/">SETRAM</a>
+qui m'intéressaient, cette fois ci, il s'agit des données électorales.</p>
+<p>Avant de commencer, sachez que tous les scripts utilisés pour cette exploitation des données sont disponibles sur un
+<a class="reference external" href="https://github.com/Matael/dataelections">dépôt Github</a>. Au long de cet article, nous essaierons de comprendre le fonctionnement desdits scripts. Sachez d'avance
+qu'ils sont plus simples que ceux pour la SETRAM.</p>
+<div class="section" id="donnees-du-scrutin">
+<h2>Données du Scrutin</h2>
+<p>Puisque nous cherchons à analyser la dernière élection, il nous faut les données du scrutin avec la meilleure
+granularité possible. Pour nous, ce sera les données du vote classées par secteurs. Ces données là ne sont pas simples à
+trouver (et un grand merci à <a class="reference external" href="https://twitter.com/fblain">feedoo</a> pour le lien), elles sont sur un site qui semble plus ou moins dédié à ça :
+<a class="reference external" href="http://extra.lemans.fr/elections/">http://extra.lemans.fr/elections/</a> .</p>
+<p>Si vous cherchez à analyser la source de la page du <a class="reference external" href="http://extra.lemans.fr/elections/premier_tour/">premier tour</a> en version &quot;classique&quot;, vous serez peut être un peu
+déçu... Qu'à cela ne tienne, nous allons jeter un oeil dans le seul indice que nous ayons : un <a class="reference external" href="http://extra.lemans.fr/elections/premier_tour/soluvote.js">script</a> JS nommé
+<tt class="docutils literal">soluvote.js</tt> et appelé dans la page.</p>
+<p>Le script est un peu long (et sans grande surprise) mais certaines lignes sont intéressantes : les lignes 15, 205 et 236
+notamment :</p>
+<div class="highlight"><pre><span></span><span class="c1">// ligne 15</span>
+<span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+    <span class="nx">url</span><span class="o">:</span> <span class="s2">&quot;xml/Election.xml?d=&quot;</span> <span class="o">+</span> <span class="p">(</span><span class="k">new</span> <span class="nb">Date</span><span class="p">()).</span><span class="nx">getTime</span><span class="p">(),</span>
+    <span class="c1">// ...</span>
+
+<span class="c1">// ligne 205</span>
+<span class="nx">fichier</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;fichier&#39;</span><span class="p">).</span><span class="nx">first</span><span class="p">().</span><span class="nx">text</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;.xml&quot;</span><span class="p">;</span>
+<span class="c1">// ligne 236</span>
+<span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+    <span class="nx">url</span><span class="o">:</span> <span class="s2">&quot;xml/&quot;</span> <span class="o">+</span> <span class="nx">fichier</span> <span class="o">+</span> <span class="s2">&quot;?d=&quot;</span> <span class="o">+</span> <span class="p">(</span><span class="k">new</span> <span class="nb">Date</span><span class="p">()).</span><span class="nx">getTime</span><span class="p">(),</span>
+    <span class="c1">// ...</span>
+</pre></div>
+<p>Ces lignes nous donnent l'envie de tester l'ajout de quelques bouts de chemin à l'URL :</p>
+<ul class="simple">
+<li>l'ajout de <tt class="docutils literal">/xml/</tt> nous permet de voir qu'il est interdit de lister les fichiers dans un dossier qui toutefois
+existe</li>
+<li>si on ajoute <tt class="docutils literal">/xml/Election.xml</tt> (en laissant tomber la date ajoutée dans le script) on arrive à un fichier XML qui
+semble être une table de correspondance entre les différents bureaux (qui sont en fait les secteurs) et les résultats
+qui leurs sont associés.</li>
+<li>enfin, en ajoutant <tt class="docutils literal">/xml/</tt> et un des champs <tt class="docutils literal">fichier</tt> du <tt class="docutils literal">Election.xml</tt>, on obtient les résultats de vote liste
+par liste pour le bureau choisi...</li>
+</ul>
+<p>Reste donc à autoriser cette récupération, ce que fait le script <tt class="docutils literal">scrap_scrutin.py</tt>.</p>
+<div class="section" id="configuration-generale">
+<h3>Configuration générale</h3>
+<p>Le fichier <tt class="docutils literal">config.py</tt> contient le nom du tour électoral d'intérêt, la liste des listes engagées au tour et la liste
+des différentes couleurs associées à chaque liste électorale (nous verrons pourquoi).</p>
+<p>Ainsi, <tt class="docutils literal">config.py</tt> ressemble à :</p>
+<div class="highlight"><pre><span></span><span class="n">tour</span> <span class="o">=</span> <span class="s1">&#39;second_tour&#39;</span>
+
+<span class="n">listes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;premier_tour&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;LISTE D&#39;UNION DE LA DROITE ET DU CENTRE (Alain PIGEAU)&quot;</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;LUTTE OUVRIERE FAIRE ENTENDRE LE CAMP DES TRAVAILLEURS (Yves CHEÈRE)&quot;</span><span class="p">,</span>
+        <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;LE MANS RENOUVEAU CITOYEN (Ariane HENRY)&quot;</span><span class="p">,</span>
+        <span class="mi">4</span><span class="p">:</span> <span class="s2">&quot;AVEC VOUS POUR LE MANS (Christelle MORANÇAIS)&quot;</span><span class="p">,</span>
+        <span class="mi">5</span><span class="p">:</span> <span class="s2">&quot;LE MANS POUR TOUS (Jean-Claude BOULARD)&quot;</span><span class="p">,</span>
+        <span class="mi">6</span><span class="p">:</span> <span class="s2">&quot;CARTON ROUGE (Pascal LE PORT)&quot;</span><span class="p">,</span>
+        <span class="mi">7</span><span class="p">:</span> <span class="s2">&quot;LE MANS BLEU MARINE (Louis NOGUÈS)&quot;</span><span class="p">,</span>
+        <span class="mi">8</span><span class="p">:</span> <span class="s2">&quot;ALTERNATIVE PROGRESSISTE SOLIDAIRE (Michel PEZERIL)&quot;</span><span class="p">},</span>
+    <span class="s1">&#39;second_tour&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;AVEC VOUS POUR LE MANS (Christelle MORANÇAIS)&quot;</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;LE MANS POUR TOUS (Jean-Claude BOULARD)&quot;</span><span class="p">,</span>
+        <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;LE MANS BLEU MARINE (Louis NOGUÈS)&quot;</span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">colors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;premier_tour&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;#2E9AFE&quot;</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;#FF0040&quot;</span><span class="p">,</span>
+        <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;#B40404&quot;</span><span class="p">,</span>
+        <span class="mi">4</span><span class="p">:</span> <span class="s2">&quot;#0101DF&quot;</span><span class="p">,</span>
+        <span class="mi">5</span><span class="p">:</span> <span class="s2">&quot;#FE2E9A&quot;</span><span class="p">,</span>
+        <span class="mi">6</span><span class="p">:</span> <span class="s2">&quot;#FF0000&quot;</span><span class="p">,</span>
+        <span class="mi">7</span><span class="p">:</span> <span class="s2">&quot;#08088A&quot;</span><span class="p">,</span>
+        <span class="mi">8</span><span class="p">:</span> <span class="s2">&quot;#B40431&quot;</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;second_tour&#39;</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;#0101DF&quot;</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;#FE2E9A&quot;</span><span class="p">,</span>
+        <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;#08088A&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="section" id="scraping">
+<h3>Scraping</h3>
+<p>Pour une fois, le scraping ne fut pas (trop) horrible : les données étaient prévues pour être exploitées par un script
+et ça a facilité les choses. Ainsi, le script s'écrit simplement (<tt class="docutils literal">scrap_scrutin.py</tt>):</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<span class="kn">from</span> <span class="nn">requests</span> <span class="kn">import</span> <span class="n">get</span>
+
+<span class="kn">from</span> <span class="nn">config</span> <span class="kn">import</span> <span class="n">tour</span>
+
+<span class="n">base_url</span> <span class="o">=</span> <span class="s1">&#39;http://extra.lemans.fr/elections/{}/xml/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tour</span><span class="p">)</span>
+
+<span class="c1"># récupération de la liste des bureaux</span>
+<span class="n">get_liste</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s1">&#39;{}{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_url</span><span class="p">,</span><span class="s1">&#39;Election.xml&#39;</span><span class="p">))</span>
+<span class="n">bureaux_soup</span>  <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">get_liste</span><span class="o">.</span><span class="n">text</span><span class="p">)</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;bureau&#39;</span><span class="p">)</span>
+
+<span class="n">bureaux</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bureaux_soup</span><span class="p">:</span>
+
+    <span class="c1"># récupération du numéro</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;numero&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Scraping office {}...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="p">))</span>
+
+    <span class="c1"># récupération du fichier XML correspondant au bureau</span>
+    <span class="n">fichier</span> <span class="o">=</span> <span class="s2">&quot;{}.xml&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;fichier&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="c1"># extraction des résultats</span>
+    <span class="n">candidats</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;{}{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_url</span><span class="p">,</span><span class="n">fichier</span><span class="p">))</span><span class="o">.</span><span class="n">text</span><span class="p">)</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;candidat&#39;</span><span class="p">)</span>
+    <span class="n">c_results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">candidats</span><span class="p">:</span>
+        <span class="n">c_results</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;intituler&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;pourcentage&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;%&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span><span class="s1">&#39;.&#39;</span><span class="p">))</span>
+
+    <span class="c1"># ajout à la liste globale</span>
+    <span class="n">bureaux</span><span class="p">[</span><span class="n">num</span><span class="p">]</span> <span class="o">=</span> <span class="n">c_results</span>
+
+
+<span class="c1"># sauvegarde</span>
+<span class="n">savefile</span> <span class="o">=</span> <span class="s2">&quot;data/{}.json&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tour</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Saving to : {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">savefile</span><span class="p">))</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">savefile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">bureaux</span><span class="p">))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Everything&#39;s OK... Quit.&quot;</span><span class="p">)</span>
+</pre></div>
+<p>Le début et la fin du script sont respectivement la récupération d'une liste des bureaux de vote et la sauvegarde des
+résultats dans un fichier (mise en cache pour plus tard).</p>
+<p>La boucle, elle, se contente d'itérer sur les différents bureaux et pour chacun des bureaux de regarder les champs <tt class="docutils literal">num</tt>
+d'une part (pour pouvoir les relier aux secteurs ensuite) et <tt class="docutils literal">fichier</tt> d'autre part. Connaissant ainsi le nom du
+fichier xml de résultats pour le bureau, on fait une nouvelle requête pour le récupérer et on en extrait les scores de
+chacun des candidats en lice. On crée alors une hashmap liant les candidats (numéro de liste uniquement) à leur score.</p>
+</div>
+</div>
+<div class="section" id="emplacements-des-bureaux-de-vote">
+<h2>Emplacements des bureaux de vote</h2>
+<p>Le Mans n'est pas connu pour sa brillante politique OpenData... en effet, et j'en avais déjà <a class="reference external" href="/writing/opendata-au-mans/">disserté ici</a>, les
+données sont disponibles sous forme de zip, après validation d'une license et sous des URLs qui rendent la procédure pas
+automatisable.</p>
+<p>On récupère donc un fichier zip à l'adresse suivante : <a class="reference external" href="http://www.lemans.fr/page.do?t=2&amp;uuid=10A48915-550EA533-1F82E3AA-D697BAF8">http://www.lemans.fr/page.do?t=2&amp;uuid=10A48915-550EA533-1F82E3AA-D697BAF8</a></p>
+<p>Après décompression on ne conserve que le fichier <tt class="docutils literal">csv/BUREAUX_VOTE.csv</tt> et on va chercher les colonnes <tt class="docutils literal">COMMUNE</tt>,
+<tt class="docutils literal">ADRRESSE</tt> et <tt class="docutils literal">SECTEURS</tt>. On redécoupe la dernière pour exporter les numéros de secteurs uniquement et on extrapole
+le code postal depuis la première... Ça nous donne le script suivant :</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="c1"># Extraction des données des fichiers &quot;Opendata&quot; du mans.</span>
+<span class="c1">#</span>
+<span class="c1"># On cherche à afficher toutes les addresses pour pouvoir</span>
+<span class="c1"># ensuite les passer en bloc à un geocodeur</span>
+
+<span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;data/BUREAUX_VOTE.csv&quot;</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+    <span class="n">reader</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+    <span class="n">crossref_bureaux_oldaddr</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">error_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">l</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Le Mans&#39;</span><span class="p">:</span> <span class="c1"># extrapol. du CP</span>
+            <span class="n">cp</span> <span class="o">=</span> <span class="mi">72000</span>
+        <span class="k">else</span><span class="p">:</span> <span class="n">error_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">addr_str</span> <span class="o">=</span> <span class="s2">&quot;{}, {} {}, France&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span><span class="n">cp</span><span class="p">,</span><span class="n">l</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="c1"># formattage de l&#39;addresse complète</span>
+
+        <span class="c1"># transfor. du champ SECTEURS en liste</span>
+        <span class="n">crossref_bureaux_oldaddr</span><span class="p">[</span><span class="n">addr_str</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;latin-1&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">l</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">addr_str</span><span class="p">)</span>
+
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Errors : {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">error_count</span><span class="p">))</span>
+
+<span class="c1"># sauvegarde des crossref</span>
+<span class="n">savefile</span> <span class="o">=</span> <span class="s1">&#39;data/crossref.json&#39;</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Saving crossref file to {}...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">savefile</span><span class="p">))</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">savefile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">crossref_bureaux_oldaddr</span><span class="p">))</span>
+</pre></div>
+<p>On exporte aussi le dictionnaire de références croisées pour l'utiliser plus tard.</p>
+<div class="section" id="geocoding">
+<h3>Geocoding</h3>
+<p>Pour pouvoir les placer sur un fond de carte, il faut ensuite convertir ces adresses postales en coordonnées GPS.
+Pour cela, on utilisera le site <a class="reference external" href="http://www.gpsfrance.net/liste-adresses-vers-coordonnees-gps">suivant</a> (merci à eux d'ailleurs, on a joyeusement poutré leur quota...).</p>
+<blockquote>
+<strong>Remarque</strong>
+Le processus visant à passer d'adresse postales aux coordonnées GPS s'appelle Geocoding (ou parfois geocodage en
+français).</blockquote>
+<p>On récupère alors un csv de la forme :</p>
+<div class="highlight"><pre><span></span>lat;lon;adresse utilisée;adresse fournie
+</pre></div>
+<p>De ce csv, on sort les coordonnées que l'on lie, via le dictionnaire de <em>crossref</em> aux secteurs :</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">config</span> <span class="kn">import</span> <span class="n">tour</span>
+
+<span class="c1"># Création d&#39;un GeoJson propre</span>
+<span class="c1">#</span>
+<span class="c1"># Ce script fait suite à extract_OD.py, il prend les données</span>
+<span class="c1"># renvoyées par le geocodeur et les transforme en liste de Features</span>
+<span class="c1"># GeoJSOn traçables sur une map</span>
+
+<span class="c1"># fichier retourné par le geocodeur</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;data/bureaux_vote_coords.csv&quot;</span>
+
+<span class="c1"># on charge le fichier de crossref</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Loading crossref from data/crossref.json&#39;</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/crossref.json&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">crossref_bureaux_oldaddr</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;data/crossref.json not found...</span><span class="se">\n</span><span class="s1">Please run extract_OD.py before&#39;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># lecture du CSV et création d&#39;un GeoJSON importable</span>
+<span class="n">geolist</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+        <span class="n">geolist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Feature&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Point&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;coordinates&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">l</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Bureau de vote&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;secteurs&quot;</span><span class="p">:</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="n">crossref_bureaux_oldaddr</span><span class="p">[</span><span class="n">l</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)]))</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+<span class="c1"># sauvegarde de la liste des bureaux de vote</span>
+<span class="n">savefile</span> <span class="o">=</span> <span class="s2">&quot;data/bureaux_vote_coords.json&quot;</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Saving GeoJSON list to {}...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">savefile</span><span class="p">))</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">savefile</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">geolist</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="section" id="lien-bureau-resultats">
+<h3>Lien bureau - résultats</h3>
+<p>Après avoir récupéré d'une part la liste des bureaux de vote et leur localisation, et d'autre part les résultats par
+secteurs, il est temps de rassembler tout ça. On réimporte pour cela les données du scrutin et les coordonnées des
+bureaux et on les triture.</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">config</span> <span class="kn">import</span> <span class="n">listes</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">tour</span>
+
+<span class="c1"># données du scrutin</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Loading poll data...&#39;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/{}.json&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tour</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">bureaux</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">bureaux</span> <span class="o">=</span> <span class="p">{</span><span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">):</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">bureaux</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<span class="c1"># coordonnées des bureaux</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Loading coords of offices&#39;</span><span class="p">)</span>
+<span class="n">geo_filename</span> <span class="o">=</span> <span class="s2">&quot;data/bureaux_vote_coords.json&quot;</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">geo_filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">geolist</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="c1"># ajout des résultats</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">geolist</span><span class="p">)):</span>
+    <span class="c1"># on itère sur les bureaux</span>
+
+    <span class="n">data_files</span> <span class="o">=</span> <span class="n">geolist</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;secteurs&#39;</span><span class="p">]</span>
+    <span class="c1"># on crée un dico avec le bon nombre de liste et 0% à chacune</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{</span><span class="n">_</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">listes</span><span class="p">[</span><span class="n">tour</span><span class="p">]))}</span>
+
+    <span class="c1"># on récupère les secteurs liés au bureau courant</span>
+    <span class="n">secteurs</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">data_files</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span>
+
+    <span class="c1"># regroupement de plusieurs secteurs sur un bureau</span>
+    <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">secteurs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">bureaux</span><span class="p">[</span><span class="n">num</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span> <span class="n">results</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span> <span class="o">+=</span> <span class="n">v</span>
+
+    <span class="c1"># normalisation par le nombre de secteurs regroupés</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">geolist</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="n">listes</span><span class="p">[</span><span class="n">tour</span><span class="p">][</span><span class="n">k</span><span class="p">]]</span> <span class="o">=</span> <span class="s2">&quot;{} %&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">secteurs</span><span class="p">))</span>
+
+<span class="c1"># sauvegarde</span>
+<span class="n">savefile</span> <span class="o">=</span> <span class="s2">&quot;data/bureaux_vote_results_{}.json&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tour</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Saving to {}...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">savefile</span><span class="p">))</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">savefile</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">geolist</span><span class="p">))</span>
+</pre></div>
+<p>Lorsque le fichier résultant est importé dans OSM, on se retrouve avec les premier et second tours par bureaux tels
+qu'affichés sur <a class="reference external" href="http://umap.openstreetmap.fr/fr/map/le-mans-elections_6485">cette carte</a>.</p>
+</div>
+</div>
+<div class="section" id="secteurs-de-vote">
+<h2>Secteurs de vote</h2>
+<p>Un aspect plus significatif (en tout cas plus visuel) est apporté par la visualisation des secteurs colorés en fonction
+de divers critères (majoritaire, abstention, etc...).</p>
+<p>De notre côté, le tracé des secteurs eux mêmes sur une carte fut compliqué. Voyons pourquoi...</p>
+<div class="section" id="aspect-des-donnees-brutes">
+<h3>Aspect des données brutes</h3>
+<p>Les données &quot;brutes&quot; fournies par la ville se présentent sous la forme du &quot;pack&quot; <a class="reference external" href="http://www.lemans.fr/page.do?t=2&amp;uuid=F800DD7B-550EA533-37695DD8-0C16AF0E">Voies par secteurs</a>. Dans ce pack, on
+retrouve plusieurs fichiers dont un nous sera utile : <tt class="docutils literal">VOIES_PAR_BUREAU_VOTE.csv</tt>.</p>
+<p>Le fichier CSV se présente avec le format suivant :</p>
+<div class="highlight"><pre><span></span>RIVOLI;VOIE;MINIMUM_PAIR;MAXIMUM_PAIR;MINIMUM_IMPAIR;MAXIMUM_IMPAIR;NUM_BV;BUREAU_DE_VOTE
+</pre></div>
+<p>Nous avons alors procédé ainsi :</p>
+<ul class="simple">
+<li>pour chaque secteur (bureau ici) et chaque rue, on isole les adresses avec les plus grands et plus petits numéros</li>
+<li>on en fait un CSV geocodable sur le site habituel</li>
+<li>on fait des données en sortie un json importable dans OSM (via le script <tt class="docutils literal">csv2geojson_sect.py</tt>)</li>
+<li>on trace un polygone autour à la main</li>
+<li>on vérifie avec une carte &quot;officielle&quot; qui nous a été fournie (mais qui n'est pas assez précise pour être directement
+exploitable)</li>
+<li>on recommence pour le suivant.</li>
+</ul>
+<p>C'est ainsi que nous perdîmes (<a class="reference external" href="https://twitter.com/fblain">feedoo</a> et moi-même) quelques soirées à tracer des secteurs sur une carte...</p>
+<blockquote>
+<p><strong>Remarque</strong></p>
+<p>Certains objecterons que nous aurions pu utiliser une API pour le geocodage, c'est vrai, mais pas forcément plus
+simple.</p>
+</blockquote>
+</div>
+<div class="section" id="trace-sur-la-map-et-export">
+<h3>Tracé sur la map et export</h3>
+<p>Une fois les 97 polygones correspondants aux secteurs de vote tracés, nous pouvons réexporter l'ensemble des <em>features</em>
+dans un fichier GeoJSON.</p>
+<p>Vient alors l'exploitation de ce fichier pour y ajouter nos données des scrutins.</p>
+</div>
+<div class="section" id="ajout-de-resultats-et-de-la-couleur">
+<h3>Ajout de résultats et de la couleur</h3>
+<p>Pour l'ajout des résultats, il faut savoir que le script est très semblable à celui pour l'approche &quot;par bureau&quot; :</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">config</span> <span class="kn">import</span> <span class="n">listes</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">tour</span>
+
+<span class="c1"># d&#39;abord, on lit la liste des secteurs et on en fait un truc utilisable.</span>
+<span class="n">sect_filename</span> <span class="o">=</span> <span class="s2">&quot;data/secteurs.json&quot;</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">sect_filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="c1"># on veut un hash : numéro du secteur =&gt; liste de coords</span>
+    <span class="n">map_secteurs</span> <span class="o">=</span> <span class="p">{</span><span class="nb">int</span><span class="p">(</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]):</span><span class="n">_</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;coordinates&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span>  <span class="ow">in</span> <span class="n">tmp</span><span class="p">[</span><span class="s1">&#39;features&#39;</span><span class="p">]}</span>
+
+<span class="c1"># chargement des données du vote</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Loading poll data...&#39;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/{}.json&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tour</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">bureaux</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">bureaux</span> <span class="o">=</span> <span class="p">{</span><span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">):</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">bureaux</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+
+<span class="c1"># on crée un objet GeoJSON vide</span>
+<span class="n">geolist</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;FeatureCollection&quot;</span><span class="p">,</span> <span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+
+<span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">map_secteurs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="c1"># pour chaque secteur, on crée une feature polygonale avec</span>
+    <span class="c1"># les bonnes coordonnées et le nom du secteur</span>
+    <span class="n">new_feature</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Feature&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Polygon&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;coordinates&#39;</span><span class="p">:</span> <span class="n">map_secteurs</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;properties&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;_storage_options&#39;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Secteur {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1"># on extrait des résultats du vote les données</span>
+    <span class="c1"># du secteur concerné</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">bureaux</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+    <span class="c1"># couleur du secteur</span>
+    <span class="c1"># on trie les candidats par pourcentage de voies décroissant</span>
+    <span class="n">res_sortedkeys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="c1"># on prend le premier élément et on choisit la couleur en fonction</span>
+    <span class="c1"># de qui il/elle est</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">tour</span><span class="p">][</span><span class="n">res_sortedkeys</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="n">new_feature</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;_storage_options&#39;</span><span class="p">][</span><span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">color</span>
+
+    <span class="c1"># ajout du score de chacun</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">new_feature</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="n">listes</span><span class="p">[</span><span class="n">tour</span><span class="p">][</span><span class="n">k</span><span class="p">]]</span> <span class="o">=</span> <span class="s2">&quot;{} %&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+    <span class="c1"># ajout à la liste</span>
+    <span class="n">geolist</span><span class="p">[</span><span class="s1">&#39;features&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_feature</span><span class="p">)</span>
+
+<span class="c1"># sauvegarde</span>
+<span class="n">savefile</span> <span class="o">=</span> <span class="s2">&quot;data/secteurs_results_{}.json&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tour</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Saving to {}...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">savefile</span><span class="p">))</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">savefile</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">geolist</span><span class="p">))</span>
+</pre></div>
+<p>Et voilà pour les secteurs ! Le résultat est aussi visible sur certains des <em>layers</em> de <a class="reference external" href="http://umap.openstreetmap.fr/fr/map/le-mans-elections_6485">cette carte</a>.</p>
+</div>
+</div>
+<div class="section" id="et-maintenant">
+<h2>Et maintenant ?</h2>
+<p>Maintenant, il reste plein de choses à faire.</p>
+<p>Tout d'abord, vous l'aurez compris, l'accès aux données n'est pas aisé du tout.
+De plus les données &quot;OpenData&quot; sur Le Mans ne sont pas forcément très à jour (elles datent, pour celles utilisées ici, de
+2012). Elle ne sont pas non plus complètes : en effet, sans la carte fournie de l'intérieur, certains secteurs auraient été très faux...</p>
+<p>Passé tout cela, il reste que pour que ces données prennent tout leur sens, il faudrait les contextualiser, observer les
+résultats de précédents scrutins, croiser avec des données démographiques, avec des données concernant la vie sociale,
+culturelle et sportive, etc... bref, les replacer dans leur contexte global.</p>
+<p>De ce côté là, il reste encore beaucoup de boulot.</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

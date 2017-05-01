@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="arduino" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Stop</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:20:57+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/arduino.html">arduino</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Comment gérer tout ce qui est nécessaire et réagir aux nouvelles données
+avec un microcontrôleur ?</p>
+<p>Dans la programmation d'une application pour microcontrôleur, on ne va
+pas loin si on doit vérifier en permanence l'état des différentes pins.
+Certains changement d'état des pins doivent bénéficier d'un traitement
+rapide, dès leur apparition. Pour gérer de tels comportements, exécuter
+le programme principal et réagir au quart de tour si besoin, on a mis en
+place sur les microcontrôleurs un système d'<strong>interruptions</strong> !</p>
+<div class="section" id="pourquoi">
+<h2>Pourquoi ?</h2>
+<p>Comme je le disais tout de suite, au cours de l'éxécution d'un
+programme, on peut (en fait, on en a très souvent besoin) de réagir à un
+changement d'état sur une (ou plusieur) des pins du micro-controleur.</p>
+</div>
+<div class="section" id="qu-est-ce-que-c-est">
+<h2>Qu'est ce que c'est ?</h2>
+<p>Apellées en anglais IRQ (<em>interruption request</em> ou <em>demande
+d'interruption</em>), les interruptions matérielles sont provoquées par un
+changement détat sur une des lignes I/O <strong>matérielles</strong> d'un
+microcontrôleur. Les interruptions peuvent aussi être de nature
+logicielles (souvent apellées <em>exceptions</em> en informatiques). On lie la
+détection (automatique) de ce changement d'état à l'exécution d'une
+fonction qui doit être minimaliste pour ne pas perturber l'éxécution du
+programme principal.</p>
+</div>
+<div class="section" id="utilite-des-interruptions">
+<h2>Utilité des interruptions</h2>
+<p>Imaginez que, dans l'attente d'un changement de niveau sur une des pins
+du microcontrôleur, vous dussiez insérer entre chaque instruction du
+programme un truc du genre :</p>
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">ancien_etat</span> <span class="o">!=</span> <span class="n">digitalRead</span><span class="p">(</span><span class="n">numero_de_pin</span><span class="p">))</span>
+<span class="p">{</span>
+    <span class="n">ancien_etat</span> <span class="o">=</span> <span class="n">digitalRead</span><span class="p">(</span><span class="n">numero_de_pin</span><span class="p">);</span>
+    <span class="n">fonction</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+<p>Pour vérifier dès que possible si un changement d'état a eu lieu...
+Autant vous dire que votre programme ne va pas être très lisible et
+surtout sera très peu efficace !!</p>
+<p>En fait, ce genre de structures étaient souvent rassemblées (le sont
+toujours) dans ce que l'on appelle une <strong>polling loop</strong> (boucle de
+consultation). Les principaux inconvénients de cette boucle sont simples
+à comprendre : elle est longue à entreprendre et monopolise une mémoire
+impressionnante ! En effet, il faut, à intervalles réguliers, vérifier
+les états logiques des pins à surveiller, déclencher une fonction si
+nécessaire, et stocker les états pour pouvoir comparer à la prochaine
+itération de la boucle...</p>
+<p>Les interruptions sont alors <strong>la</strong> bonne idée ! Implémentées comme il
+faut, elle permettent d'éxécuter une <strong>routine de gestion
+d'interruption</strong> (en anglais <em>interrupt handler</em>) après avoir sauvegardé
+le contexte d'éxécution du programme principal puis de reprendre cette
+dernière comme si de rien était. La routine de gestion d'une
+interruption doit toutefois s'éxécuter de manière suffisament rapide
+pour que son fonctionnement soit quasi transparent.</p>
+</div>
+<div class="section" id="quand-peut-on-les-utiliser">
+<h2>Quand peut on les utiliser ?</h2>
+<p>Les interruptions sont utiles dès qu'un état précis du sytème requiert
+une réaction <strong>rapide</strong>. Le déclenchement d'une interruption est
+indépendant de l'éxécution du programme principal (il est toutefois
+possible de désactiver la gestion des interruptions pour certaines
+partie d'un programme ne pouvant souffrir de retard). Les interruptions
+peuvent par exemple servir pour la gestion d'un évènement important (fin
+d'un transfert, apparition d'une conection, approche d'un obstacle dans
+le cas d'un robot, etc...) ou la réaction à un acte de l'utilisateur.</p>
+<p>Notez enfin que sur les plus gros sytèmes (les ordinateurs par exemple),
+la gestion et le déclenchement des interruptions disposent de circuits
+dédiés, au moins pour leur hierarchisation (parfois pour leur
+traitement).</p>
+</div>
+<div class="section" id="et-l-arduino">
+<h2>Et l'arduino ?</h2>
+<p>L'arduino est une plaque programmable basé sur un microcontroleur et de
+fait propose une gestion des interruptions qui, même si elle reste très
+imparfaite, est toujours meilleure que celle proposé par d'autres
+systèmes programmables. Des langages de bas niveau comme l'Assembleur
+proposent la meilleure gestion et la plus grande flexibilité pour les
+interruptions. Ce sont en effet des traitements très proches de la
+partie <em>physique</em> d'un système. Dans les langages de plus haut niveau on
+peut générer des interruptions logiciellles sous la forme
+d'<em>exceptions</em>.</p>
+<div class="section" id="fonctions">
+<h3>Fonctions</h3>
+<p>Dans le système de gestion de l'arduino, quatre fonctions sont dédiées
+aux interruptions : <tt class="docutils literal">attachInterrupt()</tt>, <tt class="docutils literal">detachInterrupt()</tt>,
+<tt class="docutils literal">interrupts()</tt> et <tt class="docutils literal">noInterrupts()</tt>.</p>
+<div class="section" id="attachinterrupt">
+<h4>attachInterrupt()</h4>
+<p>Cette fonction permet de lier le déclenchement d'une interruption à un
+évènement sur une pin. Elle s'utilise comme suit :</p>
+<div class="highlight"><pre><span></span><span class="n">attachInterrupt</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">fonction</span><span class="p">,</span> <span class="n">mode</span><span class="p">);</span>
+</pre></div>
+<p>Où :</p>
+<ul class="simple">
+<li><tt class="docutils literal">num</tt> est le numéro de l'entrée d'interruption</li>
+<li><tt class="docutils literal">fonction</tt> est la fonction à executer (routine d'interruption)</li>
+<li><tt class="docutils literal">mode</tt> est la condition de déclenchement</li>
+</ul>
+<p>Ce troisième paramètre (<tt class="docutils literal">mode</tt>) peut prendre 4 valeurs différentes :</p>
+<ul class="simple">
+<li><tt class="docutils literal">LOW</tt> : interruption lorsque la pin est au niveau logique bas</li>
+<li><tt class="docutils literal">CHANGE</tt> : interruption lors d'un changement de valeur sur la pin
+(montée ou descente, indifférement)</li>
+<li><tt class="docutils literal">RISING</tt> : interruption lors d'un passage d'un niveau à un niveau
+supérieur (front montant)</li>
+<li><tt class="docutils literal">FALLING</tt> : interruption lors d'un passage d'un niveau à un niveau
+inférieur (front descendant)</li>
+</ul>
+<p>Le choix du mode de déclenchement dépend du comportement que l'on
+souhaite obtenir. Pour un poussoir par exemple, les modes <tt class="docutils literal">RISING</tt> et
+<tt class="docutils literal">FALLING</tt> sont sympas... (regardez dans l'exemple)</p>
+<p>Notez enfin que seules deux valeurs sont possibles pour <tt class="docutils literal">num</tt> (avec
+l'arduino Uno) : 0 ou 1. En effet, ce modèle ne dispose que de 2 pins
+gérant les interruptions. Il s'agit des pins 2 (entrée d'interruption 0)
+et 3 (entrée d'interruption 1). Je vous avais prévenus, l'arduino reste
+limité du coté des interruptions (l'Arduino Mega 2650 dispose de plus
+nombreuses entrées d'interruption).</p>
+<p>Dernières précisions : toutes les variables utilisées dans les routines
+de gestion des interruptions doivent être déclarées avec le mot-clé
+<tt class="docutils literal">volatile</tt>. De même, il est impossible d'utiliser des fonctions comme
+<tt class="docutils literal">delay()</tt> dans une routine d'interruption : Le décompte des
+microsecondes n'a pas lieu pendant ces fonctions et <tt class="docutils literal">delay()</tt> est
+basée sur ce décompte.</p>
+</div>
+<div class="section" id="detachinterrupt">
+<h4>detachInterrupt()</h4>
+<p>Aussi bizarre que cela puisse paraître, cette fonction fait l'inverse de
+la première. Après avoir validé la génération d'interruptions avec
+<tt class="docutils literal">attachInterrupt()</tt>, on peut annuler cette action avec
+<tt class="docutils literal">detachInterrupt(num)</tt> (là encore, <tt class="docutils literal">num</tt> est le numero de l'entrée
+d'interruption).</p>
+</div>
+<div class="section" id="interrupts-nointerrupts">
+<h4>interrupts() &amp; noInterrupts()</h4>
+<p>Il s'agit des deux fonctions permettant d'activer ou de désactiver la
+génération d'interruptions. Il est parfois nécessaire qu'une partie du
+programme se déroule sans perturbations et on peut avoir besoin de
+supprimer les interruptions à ce moment là : c'est le role de
+<tt class="docutils literal">noInterrupts()</tt>.</p>
+<p>La fonction <tt class="docutils literal">interrupts()</tt> permet de les réactiver.</p>
+</div>
+</div>
+<div class="section" id="exemple">
+<h3>Exemple</h3>
+<p>Voyons, histoire de bien comprendre, un exemple en carton.</p>
+<p><em>Le contexte : L'arduino commande un petit chenillard (va et viens sur
+des leds)</em></p>
+<p><em>Le but : Mettre le pause le chenillard lors de l'appui sur le poussoir
+et le réactiver au second appui, etc...</em></p>
+<div class="section" id="le-code">
+<h4>Le code</h4>
+<p>Le code source est relativement simple à comprendre (surtout commenté de
+la sorte !) :</p>
+<div class="highlight"><pre><span></span><span class="c1">// Nombre de leds</span>
+<span class="cp">#define NOMBRELEDS  8</span>
+
+<span class="c1">// Leds (dans un tableau parce que c&#39;est plus simple à parcourir)</span>
+<span class="k">volatile</span> <span class="kt">int</span> <span class="n">leds</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">11</span><span class="p">};</span>
+
+<span class="c1">// Pin du Bouton</span>
+<span class="kt">int</span> <span class="n">buttonPin</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+
+<span class="c1">// Durée du delay</span>
+<span class="kt">int</span> <span class="n">timer</span><span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+
+<span class="c1">// Marche/Arret</span>
+<span class="k">volatile</span> <span class="kt">int</span> <span class="n">pauseState</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="c1">// Routine de gestion d&#39;interruption</span>
+<span class="kt">void</span> <span class="nf">pause</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">pauseState</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">pauseState</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+    <span class="c1">// On déclare les pins des LEDs en sortie</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">NOMBRELEDS</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pinMode</span><span class="p">(</span><span class="n">leds</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="c1">// ... et le bouton en entrée</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">buttonPin</span><span class="p">,</span> <span class="n">INPUT</span><span class="p">);</span>
+    <span class="c1">// On lie l&#39;interruption à la pin qui va bien (pin 2 -&gt; inter0)</span>
+    <span class="n">attachInterrupt</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pause</span><span class="p">,</span> <span class="n">RISING</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span> <span class="c1">// variable d&#39;itération</span>
+    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">leds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">HIGH</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">NOMBRELEDS</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Si on est en mode pause : on attend</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">pauseState</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="n">delay</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="p">}</span>
+        <span class="n">delay</span><span class="p">(</span><span class="n">timer</span><span class="p">);</span>
+        <span class="n">digitalWrite</span><span class="p">(</span><span class="n">leds</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">LOW</span><span class="p">);</span>
+        <span class="n">digitalWrite</span><span class="p">(</span><span class="n">leds</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">HIGH</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="c1">// et on repart dans l&#39;autre sens !</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="n">NOMBRELEDS</span> <span class="o">-</span><span class="mi">1</span> <span class="p">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">pauseState</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="n">delay</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="p">}</span>
+        <span class="n">delay</span><span class="p">(</span><span class="n">timer</span><span class="p">);</span>
+        <span class="n">digitalWrite</span><span class="p">(</span><span class="n">leds</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">LOW</span><span class="p">);</span>
+        <span class="n">digitalWrite</span><span class="p">(</span><span class="n">leds</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">HIGH</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+<p>Encore une fois : vous pouvez télécharger <a class="reference external" href="/static/files/stop/stop.pde">le
+code</a> !</p>
+</div>
+<div class="section" id="le-circuit">
+<h4>Le circuit</h4>
+<p><object data="/static/images/stop/stop.svg" style="width: 600px;" type="image/svg+xml">schéma</object>
+Vous ne voyez pas le SVG ? Voilà deux autres versions :</p>
+<ul class="simple">
+<li><a class="reference external" href="/static/files/stop/stop.fz">Fritzing</a></li>
+<li><a class="reference external" href="/static/images/stop/stop.png">PNG</a></li>
+</ul>
+<p>Les résistances pour les LEDs sont des 220Ohms et celle du bouton est une
+470Ohms...</p>
+<p>Y'a plus qu'a tester !!</p>
+<p>... Et à constater que le bouton fonctionne !!</p>
+</div>
+</div>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="python" />
+		<meta name="tags" content="fac" />
+		<meta name="tags" content="ical" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Passer de l'ICAL au PDF : un petit script</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:28:40+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/python.html">python</a></li>
+				<li><a href="/tag/fac.html">fac</a></li>
+				<li><a href="/tag/ical.html">ical</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>.</p>
+<blockquote>
+On pourra trouver bon de lire <a class="reference external" href="http://blog.matael.org/writing/ade-campus-et-bash/">cet article</a> pour commencer.</blockquote>
+<p>Après avoir trituré ADESoft pour lui soutirer des infos <em>via</em> une URL d'export iCal, on repasse à l'attaque avec cette
+fois l'objectif plus ambitieux de générer un PDF.</p>
+<div class="section" id="plan-de-bataille">
+<h2>Plan de bataille</h2>
+<p>Voilà comment on va procéder :</p>
+<ol class="arabic simple">
+<li>On trouve un moyen de récupérer l'emploi du temps en ligne</li>
+<li>On trouve un moyen de générer un PDF correct</li>
+<li>On assemble le tout et on voit si ça marche :)</li>
+</ol>
+</div>
+<div class="section" id="part-1-recuperer-l-emploi-du-temps">
+<h2>Part 1 : Récupérer l'emploi du temps</h2>
+<p>De ce côté là, pas trop de souci. Je suis simplement allez chercher au même endroit que <a class="reference external" href="http://blog.matael.org/writing/ade-campus-et-bash/">la dernière fois</a>. Je m'en
+suis tiré avec une belle URL et <em>zou</em> :)</p>
+<div class="section" id="recuperation-des-donnees">
+<h3>Récupération des données</h3>
+<p>A noter qu'en python, l'iCal se <em>parse</em> plutot pas mal :</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">icalendar</span> <span class="kn">import</span> <span class="n">Calendar</span>
+<span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">urlopen</span>
+
+<span class="n">URL</span> <span class="o">=</span> <span class="s2">&quot;http://planning.univ-lemans.fr:8080/ade/custom/modules/plannings/anonymous_cal.jsp?resources=5810,5804&amp;projectId=2&amp;calType=ical&amp;nbWeeks=4&quot;</span>
+
+<span class="n">g</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">URL</span><span class="p">)</span>
+<span class="n">gcal</span> <span class="o">=</span> <span class="n">Calendar</span><span class="o">.</span><span class="n">from_ical</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+</pre></div>
+<p>et voilà que <tt class="docutils literal">gcal</tt> contient toutes les infos ICAL qui vont bien.</p>
+<p>Reste que tout n'est pas vraiment dans le bon ordre en l'état. Si je veux ensuite générer une liste chronologique en
+PDF, ce serait quand même plus simple si tout était classé chronologiquement au début de la génération du PDF.</p>
+</div>
+<div class="section" id="nouveau-type-et-creation-d-une-liste">
+<h3>Nouveau type et création d'une liste</h3>
+<p>On peut commencer par créer un nouveau <em>pseudo-type</em> python pour gérer nos events iCal (oui, je sais qu'il y en a déjà
+un de proposé dans le module <tt class="docutils literal">icalendar</tt>, seulement, je veux un truc simple moi, un simple <em>tuple</em> amélioré, pas une
+usine à gaz).</p>
+<p>Par chance, le module <tt class="docutils literal">collections</tt> propose un truc du genre :</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+
+<span class="n">Vevent</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Vevent&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;dtstart&#39;</span><span class="p">,</span> <span class="s1">&#39;dtend&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;location&#39;</span><span class="p">])</span>
+</pre></div>
+<p>Je crée donc le <em>&quot;type&quot;</em> <tt class="docutils literal">Vevent</tt> (qui est en fait une classe) avec les 4 champs précisés auquel je pourrais accèder
+facilement. Les facilités introduites par <tt class="docutils literal">collections</tt> on l'énorme avantage d'être hyper-efficaces : <tt class="docutils literal">namedtuple</tt>
+par exemple crée une classe dont chacune des instances ne peut avoir que des attributs définis à la création de la
+classe.</p>
+<p>Ajoutons maintenant chacun des <em>events</em> iCal dans une liste (que l'on triera ensuite) :</p>
+<div class="highlight"><pre><span></span><span class="n">events</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">gcal</span><span class="o">.</span><span class="n">walk</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">component</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;VEVENT&quot;</span><span class="p">:</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">Vevent</span><span class="p">(</span><span class="n">dtstart</span><span class="o">=</span><span class="n">component</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dtstart&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+                   <span class="n">dtend</span><span class="o">=</span><span class="n">component</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dtend&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+                   <span class="n">summary</span><span class="o">=</span><span class="n">component</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;summary&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">),</span>
+                   <span class="n">location</span><span class="o">=</span><span class="n">component</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;location&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
+                  <span class="p">)</span>
+        <span class="n">events</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</pre></div>
+<p>Voilà pour la génération de la liste elle même, on prend soin (notez le) de faire les conversion de type à ce moment là
+pour les chaines (<em>summary</em> et <em>description</em>) et de retire l'objet <tt class="docutils literal">datetime.datetime</tt> natif pour les 2 dates : ça
+permettra d'allèger l'écriture ensuite.</p>
+</div>
+<div class="section" id="tri">
+<h3>Tri</h3>
+<p>Pas d'algo archi-compliqué ici : on est en python. Pour trieer une liste, il y a <tt class="docutils literal">sort()</tt> (voire <tt class="docutils literal">sorted()</tt>).</p>
+<p>Il faut simplement savoir que <tt class="docutils literal">sort()</tt> qui est une méthode de liste peut prendre un argument <tt class="docutils literal">key</tt> permettant de
+renseigner une fonction qui sera appellé sur chacun des éléments à trier et donc la valeur de retour sera utilisée comme
+clé de tri :</p>
+<div class="highlight"><pre><span></span><span class="n">events</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">event</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">dtstart</span><span class="p">)</span>
+</pre></div>
+<p>En l'occurence, on ne s'embète pas et on place une <em>lambda-function</em> dans <tt class="docutils literal">key</tt> qui a pour utilité de renvoyer
+l'objet <tt class="docutils literal">datetime.datetime</tt> représentant le début du cours. Le module <tt class="docutils literal">icalendar</tt> ayant le bon gout de traduire les
+dates iCal par des objets natifs, on peut les comparer allègrement.</p>
+<p>Les cours sont maintenant triés par ordre croissant des dates ; reste à les afficher et surtout à générer un PDF.</p>
+</div>
+</div>
+<div class="section" id="part-2-generation-d-un-pdf">
+<h2>Part 2 : Génération d'un PDF</h2>
+<p>Bon, soyons francs, le format PDF est une horreur quand il s'agit de bosser avec. Même en utilisant une <em>lib</em> ça reste
+vicieux et retors. On va donc tricher (eh, il est dimanche hein). On va :</p>
+<ol class="arabic simple">
+<li>générer un fichier temporaire et écrire dedans notre <em>listing</em> en utilisant le format RestructuredText</li>
+<li>faire passer <tt class="docutils literal">rst2pdf</tt> par dessus et générer ainsi le PDF final</li>
+<li>supprimer le fichier ReST temporaire</li>
+</ol>
+<div class="section" id="fichier-rest-temporaire">
+<h3>Fichier ReST temporaire</h3>
+<p>Rien de bien compliqué :</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">system</span><span class="p">,</span> <span class="n">getpid</span><span class="p">,</span> <span class="n">remove</span>
+
+<span class="c1"># plutot que m&#39;embèter avec les dates, j&#39;ajoute l&#39;offset à UTC à la main</span>
+<span class="n">UTC_OFFSET</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1"># génération d&#39;un nom de fichier temporaire à partir</span>
+<span class="c1"># du pid du script</span>
+<span class="n">fn</span> <span class="o">=</span> <span class="s1">&#39;ical2pdf&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">getpid</span><span class="p">())</span><span class="o">+</span><span class="s1">&#39;.rst&#39;</span>
+
+<span class="c1"># ouverture</span>
+<span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+<span class="c1"># titre</span>
+<span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;===============</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Emploi du Temps</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;===============</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># boucle sur les events triés</span>
+<span class="n">previous_d</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+
+    <span class="c1"># création d&#39;une nouvelle section si la date à</span>
+    <span class="c1"># changé par rapport à l&#39;élément d&#39;avant</span>
+    <span class="k">if</span> <span class="n">previous_d</span> <span class="o">!=</span> <span class="n">e</span><span class="o">.</span><span class="n">dtstart</span><span class="o">.</span><span class="n">date</span><span class="p">():</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">dtstart</span><span class="o">.</span><span class="n">date</span><span class="p">()))</span>
+
+        <span class="c1"># écriture du titre de section</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">dtstart</span><span class="o">.</span><span class="n">date</span><span class="p">())</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">l</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">previous_d</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">dtstart</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+
+    <span class="c1"># écriture de l&#39;élément courant</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;- **[ &quot;</span><span class="o">+</span><span class="n">e</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot; ] &quot;</span><span class="p">)</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">dtstart</span><span class="o">.</span><span class="n">hour</span><span class="o">+</span><span class="n">UTC_OFFSET</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;:&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">dtstart</span><span class="o">.</span><span class="n">minute</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;**-&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">dtend</span><span class="o">.</span><span class="n">hour</span><span class="o">+</span><span class="n">UTC_OFFSET</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;:&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">dtend</span><span class="o">.</span><span class="n">minute</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="generation-du-pdf-et-suppression-du-rest">
+<h3>Génération du PDF et suppression du ReST</h3>
+<p>Une fois que notre magnifique fichier ReST est complet, il ne reste qu'a faire passer <tt class="docutils literal">rst2pdf</tt> dessus.</p>
+<p>Vous pouvez installer ce superbe script comme suit :</p>
+<div class="highlight"><pre><span></span>sudo pip install reportlab rst2pdf
+</pre></div>
+<p>Bien sûr, vous veillerez à bien utiliser <tt class="docutils literal">pip</tt> ou <tt class="docutils literal">easy_install</tt> pour un python2.6 ou 2.7 et non 3.x...</p>
+<p>Une fois qu'on a notre <tt class="docutils literal">rst2pdf</tt> fonctionnel, on fait quelque chose d'atroce : un appel à <tt class="docutils literal">os.system()</tt> :</p>
+<div class="highlight"><pre><span></span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rst2pdf --output=./&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">getpid</span><span class="p">())</span><span class="o">+</span><span class="s1">&#39;.pdf &#39;</span><span class="o">+</span><span class="n">fn</span><span class="p">)</span>
+
+<span class="c1"># on supprime le ReST</span>
+<span class="n">remove</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+</pre></div>
+<p>Ceci étant fait, on a un joli PDF contenant le listing tant attendu \o/.</p>
+</div>
+</div>
+<div class="section" id="le-script-complet">
+<h2>Le script complet</h2>
+<p>Voilà le script en entier pour ceux qui préfèrent tout lire d'un coup :</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">icalendar</span> <span class="kn">import</span> <span class="n">Calendar</span>
+<span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">urlopen</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">system</span><span class="p">,</span> <span class="n">getpid</span><span class="p">,</span> <span class="n">remove</span>
+
+<span class="c1"># fetch data</span>
+
+<span class="n">URL</span> <span class="o">=</span> <span class="s2">&quot;http://planning.univ-lemans.fr:8080/ade/custom/modules/plannings/anonymous_cal.jsp?resources=5810,5804&amp;projectId=2&amp;calType=ical&amp;nbWeeks=4&quot;</span>
+<span class="n">UTC_OFFSET</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Fetching ICAL file&#39;</span><span class="p">)</span>
+
+<span class="n">g</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">URL</span><span class="p">)</span>
+<span class="n">gcal</span> <span class="o">=</span> <span class="n">Calendar</span><span class="o">.</span><span class="n">from_ical</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+
+<span class="c1"># sort events</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Sorting events&#39;</span><span class="p">)</span>
+
+<span class="n">Vevent</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Vevent&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;dtstart&#39;</span><span class="p">,</span> <span class="s1">&#39;dtend&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;location&#39;</span><span class="p">])</span>
+
+<span class="n">events</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">gcal</span><span class="o">.</span><span class="n">walk</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">component</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;VEVENT&quot;</span><span class="p">:</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">Vevent</span><span class="p">(</span><span class="n">dtstart</span><span class="o">=</span><span class="n">component</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dtstart&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+                   <span class="n">dtend</span><span class="o">=</span><span class="n">component</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dtend&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+                   <span class="n">summary</span><span class="o">=</span><span class="n">component</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;summary&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">),</span>
+                   <span class="n">location</span><span class="o">=</span><span class="n">component</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;location&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
+                  <span class="p">)</span>
+        <span class="n">events</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+<span class="n">events</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">event</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">dtstart</span><span class="p">)</span>
+
+<span class="c1"># Output</span>
+
+<span class="n">fn</span> <span class="o">=</span> <span class="s1">&#39;ical2pdf&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">getpid</span><span class="p">())</span><span class="o">+</span><span class="s1">&#39;.rst&#39;</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Generating ReST file (tempfile: ./&#39;</span><span class="o">+</span><span class="n">fn</span><span class="p">)</span>
+
+<span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+<span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;===============</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Emploi du Temps</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;===============</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">previous_d</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">previous_d</span> <span class="o">!=</span> <span class="n">e</span><span class="o">.</span><span class="n">dtstart</span><span class="o">.</span><span class="n">date</span><span class="p">():</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">dtstart</span><span class="o">.</span><span class="n">date</span><span class="p">()))</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">dtstart</span><span class="o">.</span><span class="n">date</span><span class="p">())</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">l</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">previous_d</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">dtstart</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;- **[ &quot;</span><span class="o">+</span><span class="n">e</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot; ] &quot;</span><span class="p">)</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">dtstart</span><span class="o">.</span><span class="n">hour</span><span class="o">+</span><span class="n">UTC_OFFSET</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;:&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">dtstart</span><span class="o">.</span><span class="n">minute</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;**-&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">dtend</span><span class="o">.</span><span class="n">hour</span><span class="o">+</span><span class="n">UTC_OFFSET</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;:&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">dtend</span><span class="o">.</span><span class="n">minute</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;End of ReST output&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Compiling to PDF&#39;</span><span class="p">)</span>
+
+<span class="n">system</span><span class="p">(</span><span class="s1">&#39;rst2pdf --output=./&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">getpid</span><span class="p">())</span><span class="o">+</span><span class="s1">&#39;.pdf &#39;</span><span class="o">+</span><span class="n">fn</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Removing temp file&#39;</span><span class="p">)</span>
+<span class="n">remove</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+</pre></div>
+<p>Bien sûr, vous pourrez tout retrouver sur <a class="reference external" href="https://github.com/Matael/ical2pdf">github</a> !</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

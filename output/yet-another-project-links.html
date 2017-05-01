@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="python" />
+		<meta name="tags" content="bottle" />
+		<meta name="tags" content="mongodb" />
+		<meta name="tags" content="lesscss" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Yet another project : Links</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:28:38+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/python.html">python</a></li>
+				<li><a href="/tag/bottle.html">bottle</a></li>
+				<li><a href="/tag/mongodb.html">mongodb</a></li>
+				<li><a href="/tag/lesscss.html">lesscss</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>In june, I talked about <a class="reference external" href="http://blog.matael.org/writing/choix-techniques-pour-une-todolist-web/">technical choices</a> for a web-based todo-list management app (article in french).
+The main goal of this project was to try out <a class="reference external" href="http://redis.io">redis</a>.
+It was a success, and I've recently added <a class="reference external" href="http://redis.io">redis</a> in a most important project.</p>
+<p>One of the tools I wanted to test was <a class="reference external" href="http://mongodb.org">MongoDB</a>.
+As I did for Redis, I first give a look to The <a class="reference external" href="http://openmymind.net/2011/3/28/The-Little-MongoDB-Book/">Little MongoDB Book</a> to get some informations about mongo.</p>
+<div class="section" id="what-s-mongodb">
+<h2>What's MongoDB</h2>
+<p>The best known concept about <a class="reference external" href="http://mongodb.org">MongoDB</a>, is that's a NoSQL storage system.
+It provides several layers to access data</p>
+<pre class="literal-block">
++------------------------+
+|         U S E R        |
++------------------------+
+            V   First you connect the server
++------------------------+
+|  C O N N E C T I O N   |
++------------------------+
+            V   Then you choose a `DB'
++------------------------+
+|     D A T A B A S E    |
++------------------------+
+            V   Then a `collection'
++------------------------+
+|  C O L L E C T I O N   |
++------------------------+
+            V   Then you `documents'
++------------------------+
+|    D O C U M E N T S   |
++------------------------+
+</pre>
+<p>Mongo uses BSON format to store data and is a schema-less system : this means that you can store completly differents <em>documents</em> in the same <em>collection</em>.</p>
+<p>Finally, you have that it provides drivers for a lot of languages.
+For this project and article, I've chosen <tt class="docutils literal">pymongo</tt> which is the <em>recommended</em> driver for <strong>python</strong>.</p>
+</div>
+<div class="section" id="about-the-project">
+<h2>About the project</h2>
+<p>The project itself is quite simple.
+We want to show a list of interesting URLs that any user can feed.</p>
+<p>We'll need 2 pages :</p>
+<ul class="simple">
+<li>the list itself (answering the route <em>/</em>)</li>
+<li>the form to add a link (route : <em>/new</em>)</li>
+</ul>
+<p>Each time a link is clicked, we'll increment a hits counter.</p>
+<p>This small app will be enough to talk about most important concepts of MongoDB.</p>
+</div>
+<div class="section" id="coding">
+<h2>Coding</h2>
+<p>First of all, let's write the basic code of a <a class="reference external" href="http://bottlepy.org">BottlePy</a> app :</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python2</span>
+<span class="c1">#-*- encoding: utf8 -*-</span>
+
+<span class="c1"># Links app</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">bson.objectid</span> <span class="kn">import</span> <span class="n">ObjectId</span>
+<span class="kn">import</span> <span class="nn">pymongo</span>
+<span class="kn">from</span> <span class="nn">bottle</span> <span class="kn">import</span>\
+        <span class="n">run</span><span class="p">,</span> \
+        <span class="n">debug</span><span class="p">,</span> \
+        <span class="n">request</span><span class="p">,</span> \
+        <span class="n">static_file</span><span class="p">,</span> \
+        <span class="n">get</span><span class="p">,</span> \
+        <span class="n">post</span><span class="p">,</span> \
+        <span class="n">redirect</span><span class="p">,</span> \
+        <span class="n">jinja2_template</span> <span class="k">as</span> <span class="n">template</span>
+
+<span class="c1"># MongoDB db name</span>
+<span class="n">DBNAME</span><span class="o">=</span><span class="s2">&quot;links&quot;</span>
+<span class="c1"># Absolute path to static files</span>
+<span class="n">STATIC_ROOT</span><span class="o">=</span><span class="s2">&quot;/home/matael/workspace/learn/python/links/static&quot;</span>
+
+<span class="c1">#### Generic Views ####</span>
+
+<span class="nd">@get</span><span class="p">(</span><span class="s1">&#39;/static/&lt;filename:path&gt;&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">send_static</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Serves static files &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">static_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">STATIC_ROOT</span><span class="p">)</span>
+
+<span class="c1"># here will go the code</span>
+
+<span class="c1"># for debug purpose only</span>
+<span class="n">debug</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">run</span><span class="p">(</span><span class="n">reloader</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="c1"># reload everytime a file changes</span>
+</pre></div>
+<p>Looking at this short piece of source code, we can spot a few things :</p>
+<ul class="simple">
+<li><tt class="docutils literal">jinja2</tt> will be used for templating</li>
+<li><tt class="docutils literal">datetime</tt> is here just for sorting</li>
+<li><tt class="docutils literal">bson</tt> will be useful to work with the automatically added <tt class="docutils literal">_id</tt> field.</li>
+<li><tt class="docutils literal">DBNAME</tt> identify the database name in mongo</li>
+</ul>
+<p>We'll also need a base template :</p>
+<div class="highlight"><pre><span></span><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&quot;en&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>Links<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&quot;utf8&quot;</span><span class="p">/&gt;</span>
+        <span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;http://fonts.googleapis.com/css?family=Overlock&#39;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#39;stylesheet&#39;</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;text/css&#39;</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet/less&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;static/main.less&quot;</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text/css&quot;</span><span class="p">/&gt;</span>
+        <span class="p">&lt;</span><span class="nt">script</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text/javascript&quot;</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;static/less-1.3.0.min.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">header</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/&quot;</span><span class="p">&gt;</span>Links<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">header</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">section</span><span class="p">&gt;</span>
+        <span class="cp">{%</span> <span class="k">block</span> <span class="nv">content</span> <span class="cp">%}{%</span> <span class="k">endblock</span> <span class="cp">%}</span>
+        <span class="p">&lt;/</span><span class="nt">section</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">footer</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;http://sam.zoy.org/wtfpl/&quot;</span><span class="p">&gt;</span>WTFPL<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span> 2012 | Powered by <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;https://github.com/Matael/links&quot;</span><span class="p">&gt;</span>Links<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span> - <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;http://blog.matael.org&quot;</span><span class="p">&gt;</span>Matael<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span> | <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/new&quot;</span><span class="p">&gt;</span>Add<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">footer</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</pre></div>
+<p>Nothing to say here. Just note we'll render our stylesheet using <a class="reference external" href="http://lesscss.org/">LessCSS</a></p>
+<div class="section" id="database-connection">
+<h3>Database connection</h3>
+<p>Let's write a function make database connection easier :</p>
+<div class="highlight"><pre><span></span><span class="c1">#### Tools ####</span>
+<span class="k">def</span> <span class="nf">connect_db</span><span class="p">():</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">pymongo</span><span class="o">.</span><span class="n">Connection</span><span class="p">()</span>   <span class="c1"># Connect instance</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">db</span><span class="p">[</span><span class="n">DBNAME</span><span class="p">]</span>             <span class="c1"># Select the right DB</span>
+    <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">links</span>             <span class="c1"># Return a cursor on the right collection</span>
+</pre></div>
+<p>Ok. So we have a base <em>and</em> a easy way to connect the db and collection.</p>
+</div>
+<div class="section" id="data-structure">
+<h3>Data structure</h3>
+<p>Each entry will be recorded a hashtable like this one :</p>
+<div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nx">_id</span><span class="o">:</span> <span class="nx">ObjectId</span><span class="p">(</span><span class="s1">&#39;the id&#39;</span><span class="p">),</span> <span class="c1">// automatically generated</span>
+    <span class="nx">poster</span><span class="o">:</span> <span class="s2">&quot;poster&#39;s pseudo&quot;</span><span class="p">,</span>
+    <span class="nx">url</span><span class="o">:</span> <span class="s2">&quot;http://example.com&quot;</span><span class="p">,</span>
+    <span class="nx">title</span><span class="o">:</span> <span class="s2">&quot;The title&quot;</span><span class="p">,</span>
+    <span class="nx">hits</span><span class="o">:</span> <span class="mi">42</span><span class="p">,</span> <span class="c1">// how many times the link had been clicked</span>
+    <span class="nx">date</span><span class="o">:</span> <span class="nx">date</span><span class="p">(</span><span class="nx">the</span> <span class="nx">date</span><span class="p">)</span> <span class="c1">// insert date</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="section" id="home">
+<h3>Home</h3>
+<p>Let's write the handler for <em>/</em> :</p>
+<div class="highlight"><pre><span></span><span class="nd">@get</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">home</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Home page for a GET request &quot;&quot;&quot;</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">connect_db</span><span class="p">()</span> <span class="c1"># connection to DB</span>
+
+    <span class="c1"># fetch all entries, sorting them by date descending</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">find</span><span class="p">()</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="n">pymongo</span><span class="o">.</span><span class="n">DESCENDING</span><span class="p">)</span>
+
+    <span class="c1"># render the template</span>
+    <span class="k">return</span> <span class="n">template</span><span class="p">(</span><span class="s2">&quot;templates/home.html&quot;</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+<p>This view is quite simple and easy to understand.
+<tt class="docutils literal">find</tt> and <tt class="docutils literal">sort</tt> are two standard MongoDB commands.
+The first one fetch <em>documents</em> and the second... sort them (here, by descending
+dates).</p>
+<p>The corresopnding template is the following :</p>
+<div class="highlight"><pre><span></span><span class="cp">{%</span> <span class="k">extends</span> <span class="s1">&#39;templates/base.html&#39;</span> <span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">block</span> <span class="nv">content</span> <span class="cp">%}</span>
+<span class="p">&lt;</span><span class="nt">article</span><span class="p">&gt;</span>
+    <span class="cp">{%</span> <span class="k">for</span> <span class="nv">r</span> <span class="k">in</span> <span class="nv">result</span> <span class="cp">%}</span>
+    <span class="p">&lt;</span><span class="nt">p</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;link&quot;</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;l_hits&quot;</span><span class="p">&gt;</span><span class="cp">{{</span><span class="nv">r</span><span class="o">[</span><span class="s1">&#39;hits&#39;</span><span class="o">]</span><span class="cp">}}</span><span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;l_link&quot;</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/goto/</span><span class="cp">{{</span><span class="nv">r</span><span class="o">[</span><span class="s1">&#39;_id&#39;</span><span class="o">]</span><span class="cp">}}</span><span class="s">&quot;</span><span class="p">&gt;</span><span class="cp">{{</span><span class="nv">r</span><span class="o">[</span><span class="s1">&#39;title&#39;</span><span class="o">]</span><span class="cp">}}</span><span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;l_poster&quot;</span><span class="p">&gt;</span>par <span class="cp">{{</span><span class="nv">r</span><span class="o">[</span><span class="s1">&#39;poster&#39;</span><span class="o">]</span><span class="cp">}}</span><span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+    <span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
+<span class="p">&lt;/</span><span class="nt">article</span><span class="p">&gt;</span>
+<span class="cp">{%</span> <span class="k">endblock</span> <span class="nv">content</span> <span class="cp">%}</span>
+</pre></div>
+<p>First line explain that this code will go into another template.
+Then we specify the <em>block</em> where to put the HTML (here, <em>content</em>).</p>
+<p>On the 7th line, we have a link to the page <em>/goto/&lt;id&gt;</em>, it's in this view
+we'll count hits.</p>
+</div>
+<div class="section" id="add-a-link">
+<h3>Add a link</h3>
+<p>Ok, the following view is a bit more complex.</p>
+<p>First, the same view will answer GET and POST request, so  we'll need to adapt
+the comportement the the type of request :</p>
+<div class="highlight"><pre><span></span><span class="nd">@post</span><span class="p">(</span><span class="s2">&quot;/new&quot;</span><span class="p">)</span> <span class="c1"># answer POST requests on /new...</span>
+<span class="nd">@get</span><span class="p">(</span><span class="s2">&quot;/new&quot;</span><span class="p">)</span>  <span class="c1"># ... and GET</span>
+<span class="k">def</span> <span class="nf">new_link_form</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; display the form for adding a link &quot;&quot;&quot;</span>
+
+    <span class="c1"># if it&#39;s not a POST request</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">:</span>
+        <span class="c1"># just render the template</span>
+        <span class="k">return</span> <span class="n">template</span><span class="p">(</span><span class="s2">&quot;templates/form.html&quot;</span><span class="p">)</span>
+
+
+    <span class="c1"># we are sure it&#39;s a POST request</span>
+    <span class="c1"># poster and url are required, check if we know them</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;poster&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">):</span>
+
+        <span class="c1"># just put require info in real variables</span>
+        <span class="n">poster</span> <span class="o">=</span> <span class="nb">unicode</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;poster&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="nb">unicode</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># we probably do not have a title</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="nb">unicode</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="c1"># if we don&#39;t, just set the url as a title for itself</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">url</span>
+
+        <span class="c1"># Connect the Database and collection</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">connect_db</span><span class="p">()</span>
+
+        <span class="c1"># insert the new link</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">insert</span><span class="p">({</span>
+            <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span>
+            <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="n">title</span><span class="p">,</span>
+            <span class="s1">&#39;poster&#39;</span><span class="p">:</span> <span class="n">poster</span><span class="p">,</span>
+            <span class="s1">&#39;hits&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s1">&#39;date&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="p">})</span>
+
+        <span class="c1"># close the connection</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+
+        <span class="c1"># go back to the main page</span>
+        <span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+    <span class="c1"># informations are missing, redirect to the form</span>
+    <span class="k">else</span><span class="p">:</span> <span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;/new&#39;</span><span class="p">)</span>
+</pre></div>
+<p>I think, even if this view is a bit more complex, it's fairly understandable
+thanks to the comments provided.</p>
+<p>The template itself is really easy (<tt class="docutils literal">&lt;table&gt;</tt> is there for design purposes
+only ;) ) :</p>
+<div class="highlight"><pre><span></span><span class="cp">{%</span> <span class="k">extends</span> <span class="s1">&#39;templates/base.html&#39;</span> <span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">block</span> <span class="nv">content</span> <span class="cp">%}</span>
+<span class="p">&lt;</span><span class="nt">article</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">form</span> <span class="na">action</span><span class="o">=</span><span class="s">&quot;/new&quot;</span> <span class="na">method</span><span class="o">=</span><span class="s">&quot;post&quot;</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">table</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">tr</span><span class="p">&gt;&lt;</span><span class="nt">td</span><span class="p">&gt;&lt;</span><span class="nt">label</span> <span class="na">for</span><span class="o">=</span><span class="s">&quot;form_url&quot;</span><span class="p">&gt;</span>Link :<span class="p">&lt;/</span><span class="nt">label</span><span class="p">&gt;&lt;/</span><span class="nt">td</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">td</span><span class="p">&gt;&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text&quot;</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;url&quot;</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;form_url&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">td</span><span class="p">&gt;&lt;/</span><span class="nt">tr</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">tr</span><span class="p">&gt;&lt;</span><span class="nt">td</span><span class="p">&gt;&lt;</span><span class="nt">label</span> <span class="na">for</span><span class="o">=</span><span class="s">&quot;form_title&quot;</span><span class="p">&gt;</span>Title :<span class="p">&lt;/</span><span class="nt">label</span><span class="p">&gt;&lt;/</span><span class="nt">td</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">td</span><span class="p">&gt;&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text&quot;</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;title&quot;</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;form_title&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">td</span><span class="p">&gt;&lt;/</span><span class="nt">tr</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">tr</span><span class="p">&gt;&lt;</span><span class="nt">td</span><span class="p">&gt;&lt;</span><span class="nt">label</span> <span class="na">for</span><span class="o">=</span><span class="s">&quot;form_poster&quot;</span><span class="p">&gt;</span>Poster :<span class="p">&lt;/</span><span class="nt">label</span><span class="p">&gt;&lt;/</span><span class="nt">td</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">td</span><span class="p">&gt;&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text&quot;</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;poster&quot;</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;form_poster&quot;</span><span class="p">/&gt;&lt;/</span><span class="nt">td</span><span class="p">&gt;&lt;/</span><span class="nt">tr</span><span class="p">&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">table</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;submit&quot;</span> <span class="na">value</span><span class="o">=</span><span class="s">&quot;Yeah !&quot;</span><span class="p">/&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">form</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">article</span><span class="p">&gt;</span>
+<span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span>
+</pre></div>
+</div>
+<div class="section" id="count-hits">
+<h3>Count hits</h3>
+<p>This is the final view we have to write.
+When a user clicks a link, he goes to <em>/goto/&lt;id&gt;</em> where <em>&lt;id&gt;</em> is the ObjectId
+of the MongoDB object.</p>
+<p>Let's try (there is no template ;) ):</p>
+<div class="highlight"><pre><span></span><span class="nd">@get</span><span class="p">(</span><span class="s2">&quot;/goto/&lt;id&gt;&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">goto</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Increments hits counter and redirect to the link &quot;&quot;&quot;</span>
+
+    <span class="c1"># connect db and collection</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">connect_db</span><span class="p">()</span>
+
+    <span class="c1"># update the document (ObjectId function is provided by BSON)</span>
+    <span class="c1"># $inc is a mongoDB helper to increment a fields without fetching the</span>
+    <span class="c1"># previous value</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="n">ObjectId</span><span class="p">(</span><span class="nb">id</span><span class="p">)},</span> <span class="p">{</span><span class="s2">&quot;$inc&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;hits&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}})</span>
+
+    <span class="c1"># Then fetch the object URL</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">find_one</span><span class="p">({</span><span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="n">ObjectId</span><span class="p">(</span><span class="nb">id</span><span class="p">)})[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Close the connection</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+
+    <span class="c1"># and redirect user to his real destination ;)</span>
+    <span class="n">redirect</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+</pre></div>
+<p>Note the <tt class="docutils literal">$inc</tt> construction. It's one the most interesting <a class="reference external" href="http://mongodb.org">MongoDB</a>'s
+feature, and it's explained <a class="reference external" href="http://www.mongodb.org/display/DOCS/Updating">here</a></p>
+</div>
+<div class="section" id="stylesheet">
+<h3>Stylesheet</h3>
+<p>The last thing I didn't dive yet is the <a class="reference external" href="http://lesscss.org/">LessCSS</a> stylesheet : you'll find it in
+the <a class="reference external" href="https://github.com/Matael/links">github repo</a> (in <em>static/</em>).</p>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>Once again, this app is not perfect. And it wasn't the goal.
+I wanted just to work with <a class="reference external" href="http://mongodb.org">MongoDB</a> to understand better its mechanisms.
+The experiment is successful : mongo is really interesting to use and could be
+extremely helpful in some situations.</p>
+<p>The entire code of this app is released under the <a class="reference external" href="http://sam.zoy.org/wtfpl/">WTFPL</a> and all feedback is
+welcome.</p>
+<p>I hope you've learned things ;)</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

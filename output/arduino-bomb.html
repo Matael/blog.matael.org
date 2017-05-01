@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="arduino" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Arduino Bomb</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:28:39+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/arduino.html">arduino</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Il y a peu, je suis tombé sur <a class="reference external" href="http://nootropicdesign.com/defusableclock/">cette page</a>.</p>
+<p>Même si je n'avais pas envie de refaire une horloge complète, avec affichage etc..., je me
+suis dit qu'il pouvait être sympa d'essayer de recoder juste la fonctionnalité de <em>&quot;bombe&quot;</em>...</p>
+<p>Finalement, le script s'est fait sans soucis et j'ai pu toucher à un autre projet que celui
+que je finalise en ce moment et dont je parlerais bientôt.</p>
+<blockquote>
+Ceci n'est <strong>pas</strong> une véritable bombe (et heureusement).
+Il n'y a ici <strong>aucun danger</strong>.
+Ne soyez pas stupide, n'emmenez pas un truc comme ça (encore plus si vous y mettez des
+afficheurs) n'importe où.</blockquote>
+<div class="section" id="montage">
+<h2>Montage</h2>
+<p>Le montage en lui même est plutot simple :</p>
+<img alt="" class="align-right" src="/static/images/defuse/defuse.png" style="width: 300px;" />
+<p>On voit en noir la masse, en rouge le +VCC qui sert pour le bouton de déclenchement du
+compte à rebours et en jaune les fils permettant le &quot;désamorçage&quot; ou le déclenchement de la
+<em>&quot;bombe&quot;</em>.</p>
+<p>J'ai utilisé une LED RGB pour afficher (en quelque sorte) le compte à rebours et l'état de
+la <em>&quot;bombe&quot;</em>.
+Voilà les signification :</p>
+<ul class="simple">
+<li>clignote en <strong>bleu</strong> toutes les secondes environ pendant le compte à rebours</li>
+<li>s'allume en <strong>vert</strong> pendant une seconde si la <em>&quot;bombe&quot;</em> est désamorcée</li>
+<li>idem en <strong>rouge</strong> si la bombe explose</li>
+</ul>
+<p>Par convention, nous prendrons les pins suivantes comme référence :</p>
+<dl class="docutils">
+<dt>Vert</dt>
+<dd>pin 3</dd>
+<dt>Bleu</dt>
+<dd>pin 4</dd>
+<dt>Rouge</dt>
+<dd>pin 5</dd>
+</dl>
+<p>Le bouton est relié à l'entrée 2 de l'arduino, soit <strong>INT0</strong>.</p>
+<p>Pour les fils de la <em>&quot;bombe&quot;</em>, nous les relions des pins 6 à 9 vers les pins 10 à 13.
+Les premières sont en OUT tandis que les secondes sont en OUT.</p>
+</div>
+<div class="section" id="programme">
+<h2>Programme</h2>
+<p>Le programme lui-même est sans difficulté, simplement il faut connaitre les fonctions
+<tt class="docutils literal">randomSeed</tt> et <tt class="docutils literal">random</tt> qui permettent d'initialiser et d'utiliser le générateur de
+nombres aléatoires.</p>
+<p>Le squelette est simple :</p>
+<div class="highlight"><pre><span></span><span class="c1">// Définition des couleurs pour la LED</span>
+<span class="cp">#define R 5</span>
+<span class="cp">#define G 3</span>
+<span class="cp">#define B 4</span>
+
+<span class="c1">// Définition des fils</span>
+<span class="cp">#define F1 6</span>
+<span class="cp">#define F2 7</span>
+<span class="cp">#define F3 8</span>
+<span class="cp">#define F4 9</span>
+
+<span class="c1">// Définition du bouton : INT0 ;)</span>
+<span class="cp">#define BUTTON 0</span>
+
+<span class="c1">// tableau contenant les numéros de pins OUT de la bombe</span>
+<span class="k">volatile</span> <span class="kt">int</span> <span class="n">F</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">F1</span><span class="p">,</span> <span class="n">F2</span><span class="p">,</span> <span class="n">F3</span><span class="p">,</span> <span class="n">F4</span><span class="p">};</span>
+
+<span class="c1">// la bombe est elle activée ?</span>
+<span class="k">volatile</span> <span class="kt">int</span> <span class="n">bomb</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="c1">// utile pour après</span>
+<span class="k">volatile</span> <span class="kt">int</span> <span class="n">boom</span><span class="p">,</span> <span class="n">ouf</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="c1">// activation des pins en IN/OUT</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// 6 7 8 9 à OUT</span>
+        <span class="n">pinMode</span><span class="p">(</span><span class="n">F</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">OUTPUT</span><span class="p">);</span>
+        <span class="c1">// 10 11 12 13 à IN</span>
+        <span class="n">pinMode</span><span class="p">(</span><span class="n">F</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">4</span><span class="p">,</span> <span class="n">INPUT</span><span class="p">);</span>
+        <span class="c1">// On passe les cables au niveau haut</span>
+        <span class="n">digitalWrite</span><span class="p">(</span><span class="n">F</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">HIGH</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// On passe à OUT les pins de la LED</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+
+    <span class="c1">// Init de la random à partir d&#39;une</span>
+    <span class="c1">// pin analogique non connectée</span>
+    <span class="n">randomSeed</span><span class="p">(</span><span class="n">analogRead</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+
+    <span class="c1">// mise en place de l&#39;interruption</span>
+    <span class="n">attachInterrupt</span><span class="p">(</span><span class="n">BUTTON</span><span class="p">,</span> <span class="n">activate_bomb</span><span class="p">,</span> <span class="n">RISING</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+<p>Pour la <tt class="docutils literal">loop</tt>, elle sera simple :</p>
+<div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="c1">// la bombe est elle activée ?</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">bomb</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="c1">// c&#39;est parti !</span>
+        <span class="kt">int</span> <span class="n">defused</span> <span class="o">=</span> <span class="n">critical_sequence</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">defused</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// si le désamorçage a réussi</span>
+            <span class="c1">// on passe la LED en vert</span>
+            <span class="n">digitalWrite</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="c1">// sinon...</span>
+            <span class="c1">// ... en rouge !</span>
+            <span class="n">digitalWrite</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="c1">// on attend un peu et on éteind la LED</span>
+        <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+        <span class="n">digitalWrite</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
+        <span class="n">digitalWrite</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
+
+        <span class="c1">// On désactive la bombe, tu t&#39;es bien battu</span>
+        <span class="n">bomb</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+<p>De là, nous savons qu'il y aura deux autres fonctions :</p>
+<ul class="simple">
+<li><tt class="docutils literal">critical_sequence</tt> pour le <em>&quot;jeu&quot;</em> lui même qui devra renvoyé 0 pour une explosion et
+1 pour un désamorçage</li>
+<li><tt class="docutils literal">activate_bomb</tt> pour l'activation de l'engin</li>
+</ul>
+<div class="section" id="routine-d-interruption-activate-bomb">
+<h3>Routine d'interruption : <tt class="docutils literal">activate_bomb</tt></h3>
+<p>La routine d'interruption sera déclenchée par appui sur le bouton et doit activer la <em>&quot;bombe&quot;</em>.</p>
+<p>Elle doit donc :</p>
+<ul class="simple">
+<li>choisir un fil au hasard pour le désamorçage</li>
+<li>idem pour l'explosion instantanée</li>
+<li>passer <tt class="docutils literal">bomb</tt> à 1</li>
+</ul>
+<p>La fonction random va nous être utile ici, voilà deux exemples de son utilisation</p>
+<div class="highlight"><pre><span></span><span class="n">randomSeed</span><span class="p">(</span><span class="n">analogRead</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span> <span class="c1">// Init</span>
+
+<span class="n">random</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>     <span class="c1">// un nombre entre 0 et 9</span>
+<span class="n">random</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">43</span><span class="p">);</span> <span class="c1">// un nombre entre 30 et 42</span>
+</pre></div>
+<p>Là encore, la fonction elle même reste simple :</p>
+<div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">activate_bomb</span><span class="p">(){</span>
+    <span class="c1">// routine d&#39;interruption pour activer la bombe</span>
+
+    <span class="c1">// Choisir le fil qui désamorce</span>
+    <span class="n">ouf</span> <span class="o">=</span> <span class="n">F</span><span class="p">[</span><span class="n">random</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span><span class="o">+</span><span class="mi">4</span><span class="p">;</span>
+
+    <span class="c1">// Choisir le fil qui fera tout exploser</span>
+    <span class="k">do</span> <span class="p">{</span>
+        <span class="n">boom</span> <span class="o">=</span> <span class="n">F</span><span class="p">[</span><span class="n">random</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span><span class="o">+</span><span class="mi">4</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="n">ouf</span> <span class="o">==</span> <span class="n">boom</span><span class="p">);</span> <span class="c1">// en s&#39;assurant qu&#39;il est différent du premier</span>
+
+    <span class="c1">// Activation !</span>
+    <span class="n">bomb</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+<p>Voilà donc pour l'interruption, à la prochaine itération de <tt class="docutils literal">loop</tt>, la <em>&quot;bombe&quot;</em> se lancera réellement.</p>
+</div>
+<div class="section" id="la-bombe-critical-sequence">
+<h3>La bombe : <tt class="docutils literal">critical_sequence</tt></h3>
+<p>La <em>&quot;bombe&quot;</em> elle même doit :</p>
+<ul class="simple">
+<li>faire blinker la LED en bleu une fois toute les secondes (comme demandé)</li>
+<li>vérifier quels fils sont coupés et passer le système dans l'état voulu au besoin</li>
+<li>si les fils de désamorçage et d'explosion sont coupés en même temps, faire exploser la <em>&quot;bombe&quot;</em> (parce que sinon, c'est pas du jeu).</li>
+</ul>
+<p>Somme toute, c'est une boucle, et deux conditions :</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">critical_sequence</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// Essaye donc de désamorcer ;)!</span>
+
+    <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span> <span class="c1">// T&#39;auras 10s ;)</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">i</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="c1">// On fait clignoter en bleu</span>
+        <span class="n">digitalWrite</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span>
+        <span class="n">delay</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span>
+        <span class="n">digitalWrite</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
+
+
+        <span class="c1">// si le fil d&#39;explosion est coupé :</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="n">boom</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// on renvoie 0</span>
+        <span class="p">}</span>
+
+        <span class="c1">// si le fil de désamorçage est coupé :</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="n">ouf</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// on renvoie 1</span>
+        <span class="p">}</span>
+
+        <span class="c1">// on attends 450 millis</span>
+        <span class="n">delay</span><span class="p">(</span><span class="mi">450</span><span class="p">);</span>
+
+        <span class="c1">// on reteste</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="n">boom</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="n">ouf</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">delay</span><span class="p">(</span><span class="mi">450</span><span class="p">);</span>
+
+        <span class="c1">// et on décrémente</span>
+        <span class="n">i</span><span class="o">--</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="c1">// si la bombe n&#39;est pas désamorcée au bout du temps,</span>
+    <span class="c1">// on la fait exploser</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+<p>La raison pour laquelle je fais le test deux fois par boucle est simple : ça permet au
+programme d'être plus fluide et plus réactif quand un fil est enlevé.</p>
+</div>
+<div class="section" id="code-complet">
+<h3>Code complet</h3>
+<p>Pour les moins courageux, le code complet est <a class="reference external" href="/static/images/defuse/defuse.ino">disponible ici</a>.
+Notez que depuis la version 1.0.0 d'Arduino, les sources portent l'extension <em>.ino</em>, le
+<em>.pde</em> étant réservé à <a class="reference external" href="http://processing.org">Processing</a> désormais.</p>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>Voilà donc un mini-jeu débile à base d'arduino.</p>
+<p>Histoire de pimenter un peu le jeu, on peut envisager de modifier un peu le programme pour
+qu'un des deux fils inutilisés ait pour effet de supprimer 3 secondes d'un coup au compte
+à rebours.
+Il suffirait de modifier un peu notre fonction d'activation pour rajouter une variable :
+<tt class="docutils literal">too_bad</tt> qui pointerait vers un des fils restants par exemple.
+Il faudrait aussi toucher un peu à <tt class="docutils literal">critical_sequence</tt> et ajouter ça aux tests :</p>
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="n">too_bad</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">i</span> <span class="o">-=</span> <span class="mi">3</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+<p>Voilà donc de quoi occuper les gosses pendant un petit moment ;)</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

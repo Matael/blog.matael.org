@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="perso" />
+		<meta name="tags" content="RucheNumérique" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Meilleur Dev de France 2013</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:28:42+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/perso.html">perso</a></li>
+				<li><a href="/tag/ruchenumerique.html">RucheNumérique</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Jeudi 10 Novembre, un peu avant 18h, 12 Bd Charles Nicolle.</p>
+<p>C'est parti pour le concours Meilleur Dev de France 2013. On y va a trois, sans autre ambition que de passer une bonne
+soirée. Ce genre de concours de programmation est souvent dominé par quelques (très) bons, et aucun de nous n'avait le
+niveau pour prétendre à la gagne (rien ne coûte de la jouer hein, mais il ne faut pas y placer tous ses espoirs...).</p>
+<p>Après deux bonnes heures de route, nous voilà arrivés sur le périph', on enchaîne (sur une bonne idée de Fabien) vers
+Bercy pour y prendre le métro qui nous mènera porte de Clichy, à 30 mètres de l'école 42.</p>
+<div class="section" id="l-ecole">
+<h2>L'école</h2>
+<p>Sur la route du retour, j'ai résumé cette école à &quot;un hangar avec des plateaux, des tables et des macs dessus&quot;. Je pense
+ne pas être trop loin de la vérité. L'école est assez asseptisée. Plusieurs (3) salles machines entièrement équipées
+d'iMacs en forment le point central, une salle en sous-sol permet d'accueillir d'éventuels évènements (pas trop grands...) et le hall est spacieux sans plus. A noter le cube transparent en face de la porte d'entrée qui, pris entre 4 piliers, renferme 4 baies serveurs (loin d'être pleines) le tout baignant dans une lumière bleue.</p>
+<p>Bon, sol gris foncé nu, plafond minimaliste, grilles sur les piliers dans les salles machines, on sent que toute la déco
+provient des machines elles-mêmes et que l'école est bâtie autour de celles ci. L'absence complète de tableau (façon
+salle de cours) m'a un peu étonné, mais après tout, on a surement pas tout vu...</p>
+</div>
+<div class="section" id="l-arrivee-et-l-installation">
+<h2>L'arrivée et l'installation</h2>
+<p>L'arrivée s'est faite un peu en catastrophe peu avant 20h30. Le concours a été décal à 20h45, mais en attendant pas
+question de se tourner les pouces : il n'y a que des macs, avec un clavier QWERTY Mac.... Après plus de 10 minutes,
+j'arrive enfin à activer un AZERTY qui semble fonctionner, à ceci près que la ponctuation n'est pas entièrement à sa
+place : une belle saloperie pour coder...</p>
+<p>Autre point très négatif : l'évaluation du code se fait via un éditeur en ligne. Celui ci n'étant pas forcément très
+ergonomique, on nous propose d'utiliser un IDE/éditeur en local puis de copier-coller vers le formulaire en ligne...
+Pas de Vim préconfiguré ni de temps pour rapatrier les dotfiles ce sera donc un Eclipse.... Il est 45, le concours
+commence.</p>
+</div>
+<div class="section" id="le-concours">
+<h2>Le Concours</h2>
+<div class="section" id="les-langages-les-conditions">
+<h3>Les langages, les conditions</h3>
+<p>Les développeurs avaient le choix entre C#, PHP et Java. C'est assez limité. Je me suis rabattu sur PHP (ne connaissant
+pas C# et n'aimant pas Java...). Le vainqueur codait en Java pour sa part, comme (apparemment) une assez vaste majorité des participants.</p>
+<p>Si l'organisation avait laissé entendre que les questions ne porteraient pas sur les spécificités des langages, elles
+étaient loin de porter sur de l'algo pure et les énoncés étaient parfois un peu biaisés...</p>
+</div>
+<div class="section" id="c-est-parti">
+<h3>C'est parti !</h3>
+<p>A la fin de leur décompte oral pour l'ouverture du concours, tout le monde a dû tenter de se logger en même temps, et on a attendu
+une grosse minute avant l'affichage des instructions... Puis une autre avant l'affichage de la première question...</p>
+<p>On nous indique qu'il est possible d'écrire dans une console de sortie visible sur l'interface en ligne (en PHP via <tt class="docutils literal">local_print_r</tt> et
+<tt class="docutils literal">local_echo</tt>) : à entendre les grognements derrière moi, ça ne marchait pas super bien pour tout le monde... (ou bien
+il n'avait rien compris).</p>
+<p>La première question portait sur l'écriture d'une classe d'itérateur permettant de <em>mergemr</em> plusieurs itérateurs en un
+seul. Il nous était demandé d'écrire les méthodes <tt class="docutils literal">next()</tt> et <tt class="docutils literal">hasNext()</tt> pour cette classe.</p>
+<p>La méthode <tt class="docutils literal">next()</tt> devait renvoyer le plus petit élément des <tt class="docutils literal">n</tt> Tickers reçus et lever une
+<tt class="docutils literal">NoSuchElementException</tt> s'il n'y en avait plus. La méthode <tt class="docutils literal">hasNext()</tt> devait, elle, permettre de vérifier s'il
+restait un ou plusieurs éléments sans lever d'exception.</p>
+<p>J'ai d'abord essayé de <em>dumper</em> tous les itérateurs dans un <tt class="docutils literal">array()</tt>, trier l'<tt class="docutils literal">array()</tt> et renvoyer les éléments un a un.
+J'ai écopé d'un magnifique dépassement de la capacité mémoire (découvrant du même coup qu'on était limités).</p>
+<p>Je me suis donc rabattu, après 20 minutes dans la doc PHP concernant l'OOP (que j'avais complètement oublié, depuis 4
+ans...), vers l'écriture du constructeur (première méthode appelée lors de la création d'un objet à partir d'une classe)
+pour dumper le premier élément de chaque ticker et une <tt class="docutils literal">next()</tt> qui va
+chercher le minimum du tableau de dump et qui remplace l'élément par le suivant dans le ticker lié.</p>
+<p>On aurait gaspillé moins de temps si la consigne avait indiqué que le constructeur était à écrire pour récupérer les
+tickers, que les tickers envoyés au constructeur étaient eux même triés, etc...</p>
+<p>Bref, une question assez mal posée et au total (entre les problèmes liés à la disposition des touches, aux lenteurs du
+site, aux quelques erreurs et à cette saloperie de constructeur) 45 minutes de perdues...</p>
+<p>La question 2 était un FizzBuzz inversé : on nous donnait une chaine contenant une liste de nombre séparés par des
+espaces où les multiples de n, et les multiples de p avaient été remplacés par Buzz. A nous d'écrire la fonction
+permettant de retrouver les entiers p et n (sachant que : <tt class="docutils literal">p &gt; n &gt; 0</tt> et <tt class="docutils literal">p % n != 0</tt>). Assez simple comme question,
+une petite extraction des nombres remplacés, un crible et voilà :)</p>
+<p>La question 3 nous donnait une liste de point &quot;ABCDA&quot; par exemple et il s'agissait de vérifier si aucun des chemins
+n'avait été emprunté 2 fois. J'ai trouvé le dernier bug au moment du gong final (et très probablement sur une évaluation
+favorable) : je n'ai pas eu le temps de passer la question 4 ensuite...</p>
+</div>
+</div>
+<div class="section" id="la-remise-des-prix-et-la-devparty">
+<h2>La remise des prix et la DevParty</h2>
+<blockquote>
+&quot;A la DevParty, les devs étaient partis&quot;, F. Saujot</blockquote>
+<p>La remise des prix s'est faite sans grande ambiance (oui, un peu quand même, mais rien de glorieux) quant à la DevParty,
+il semblerait que beaucoup s'en soit allés avant qu'elle commence.</p>
+<p>Il faut simplement savoir que personne n'a répondu aux 11 questions posées et que le premier n'est pas allé au-delà de la
+huitième (autour de moi en salle machine, aucun n'avait passé la question 2).</p>
+</div>
+<div class="section" id="les-plus-les-moins">
+<h2>Les plus, les moins</h2>
+<p>Les questions n'étaient ni ridiculement simples, ni ridiculement complexes. Somme toute, ça semblait plutôt équilibré.
+Je regrette par contre que la première ait été aussi mal posée et en ait handicapé autant.</p>
+<p>Je m'attendais pas du tout à devoir faire de la POO : pour un concours d'algorithmique, de simples fonctions auraient
+suffit.</p>
+<p>Je suis assez déçu qu'il n'y ait eu que 3 langages de proposés et parmi ces trois ni de C/C++ ni aucun langage de script
+(Python, Ruby, Perl, etc...). Je sais qu'ils n'ont pas eu beaucoup de temps pour préparer l'épreuve en elle-même, mais
+un peu plus de choix aurait été cool...</p>
+<p>Enfin, ça manquait de &quot;geekness&quot; pour un concours de programmation... même si c'était médiatisé, j'aurais préféré que
+ça parle d'abord aux codeurs et non aux médias.</p>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>L'expérience était enrichissante et sans aucun doute à refaire, mais avant que cela devienne un concours reconnu il
+faudra revoir une partie de l'organisation et l'ambiance du concours en lui-même... Il faudra aussi éviter les problèmes
+techniques d'accès à la base de données, de lag dans la compilation/l'exécution et surtout, proposer des claviers
+standards, ou au moins un moyen des les utiliser complètement.</p>
+<p><em>EDIT : Merci à Poumcala pour sa relecture attentive et ses corrections.</em></p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

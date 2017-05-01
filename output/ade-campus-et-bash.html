@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="bash" />
+		<meta name="tags" content="fac" />
+		<meta name="tags" content="ical" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>ADE Campus et bash</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:25:42+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/bash.html">bash</a></li>
+				<li><a href="/tag/fac.html">fac</a></li>
+				<li><a href="/tag/ical.html">ical</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>La fac où je suis dispose (comme de nombreuses facs de France
+d'ailleurs) de la plateforme <a class="reference external" href="http://fr.adesoft.com/ress.php?id_c=26&amp;id_rubrique1=27&gt;`_">ADE
+Campus</a> qui
+permet la mise à disposition des emplois du temps</p>
+<p>Je me suis dis que ce serait cool de pouvoir les récupèrer et les
+afficher via <tt class="docutils literal">inotify</tt>, ou même les entrer dans un bot irc.</p>
+<p><em>Note : certaines lignes de code sont coupées pour rentrer dans la page,
+ne faites pas attention ;)</em></p>
+<div class="section" id="l-api-qui-n-en-etait-pas-une">
+<h2>L'API qui n'en était pas une</h2>
+<p>Je me suis déplacé, histoire de savoir si il y avait un accès possible
+vers une API.</p>
+<p>On m'a répondu que non (parce que l'univ' n'avait pas acheté le
+module...). Par contre, m'a-t-on informé, il y a un moyen de récupérer
+une URL vers un fichier <strong>ics</strong> (<em>ical</em>).</p>
+<p>Je suis donc reparti avec cette magnifique information et je n'ai pas
+mis bien longtemps à retrouver ladite URL, qui ressemble à ça :</p>
+<pre class="literal-block">
+http://mon.domaine.truc:8080/ade/custom/modules/plannings/
+`-&gt;    anonymous_cal.jsp?resources=260,486&amp;projectId=1&amp;calType=ical&amp;nbWeeks=4
+</pre>
+<p>Si on détaille un peu cette ligne, on repère que :</p>
+<ul class="simple">
+<li>on donc récuperer un ensemble de ressources (<tt class="docutils literal">ressources=260,486</tt>)</li>
+<li>on va récupérer un fichier de type <strong>ics</strong> (<tt class="docutils literal">calType=ical</tt>)</li>
+<li>on aura les ressources (comprendre les évènements) sur 4 semaines
+(<tt class="docutils literal">nbWeeks=4</tt>)</li>
+</ul>
+<p>Pour ce qui est de l'option <tt class="docutils literal">projectId=1</tt>, je n'ai pas cherché à
+savoir ce que c'est.</p>
+</div>
+<div class="section" id="le-script-kitu">
+<h2>Le script <em>kitu</em></h2>
+<p>Voilà le script que j'ai biouillé pour récupérer les infos qui
+m'intéressaient :</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="c1">#</span>
+<span class="c1"># file : extract.sh</span>
+<span class="c1"># author : mathieu (matael) gaborit</span>
+<span class="c1"># date : mar. 2012</span>
+<span class="c1"># license: WTFPL</span>
+<span class="c1">#</span>
+<span class="c1"># Script d&#39;extraction de données</span>
+<span class="c1"># depuis un fichier ical.</span>
+<span class="c1">#</span>
+<span class="c1"># Testé avec ADECampus, Univ. du Maine</span>
+
+<span class="nv">ade_url</span><span class="o">=</span><span class="s1">&#39;http://mon.domaine.truc:8080/ade/custom/modules/plannings/anonymous_cal.jsp?resources=260,486&amp;projectId=1&amp;calType=ical&amp;nbWeeks=4&#39;</span>
+<span class="nv">patterns</span><span class="o">=</span><span class="s2">&quot;DTSTART DTEND SUMMARY LOCATION DESCRIPTION&quot;</span>
+
+curl <span class="nv">$ade_url</span> <span class="p">|</span> grep -F <span class="s2">&quot;</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$patterns</span> <span class="p">|</span> tr <span class="s1">&#39; &#39;</span> <span class="s1">&#39;\n&#39;</span><span class="k">)</span><span class="s2">&quot;</span> <span class="p">|</span>
+        tr <span class="s1">&#39; &#39;</span> <span class="s1">&#39;~ &#39;</span> <span class="p">|</span>
+        tr <span class="s1">&#39;:&#39;</span> <span class="s1">&#39; &#39;</span> <span class="p">|</span>
+        sed -e <span class="s1">&#39;s/(.*$//g&#39;</span> <span class="p">|</span>
+        awk <span class="s1">&#39;</span>
+<span class="s1">            /DTSTART/ { print &quot;\n------\n\nDébut &quot; $2}</span>
+<span class="s1">            /DTEND/ { print &quot;Fin &quot; $2}</span>
+<span class="s1">            /SUMMARY/ { print &quot;Résumé &quot; $2}</span>
+<span class="s1">            /LOCATION/ { print &quot;Lieu &quot; $2}</span>
+<span class="s1">            /DESCRIPTION/ { print &quot;Description &quot; $2}</span>
+<span class="s1">        &#39;</span> <span class="p">|</span>
+        sed -e <span class="s1">&#39;s/ /\n\t/&#39;</span> <span class="p">|</span> sed -e <span class="s1">&#39;s/\(\\n\|~\)/ /g&#39;</span> <span class="p">|</span>
+        sed -e <span class="s1">&#39;s/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)T\([0-9]\{2\}\)</span>
+<span class="s1">           \([0-9]\{2\}\)\([0-9]\{2\}\)Z/Le \3\/\2\/\1 à \4h\5/g&#39;</span>
+</pre></div>
+<p>Ce truc est un peu bourrin (je pense que le formattage y est pour
+quelque chose, quelle idée de con de vouloir parser de ics en bash ;)).</p>
+<p>Reprenons calmement <em>pipe</em> par <em>pipe</em>.</p>
+<p>Note: Le <em>pipe</em> (<tt class="docutils literal">|</tt>)</p>
+<p>Crée un nouveau processus (celui de droite) dont l'<strong>entrée standard</strong>
+correspond avec la <strong>sortie standard</strong> du processus de gauche.</p>
+<div class="highlight"><pre><span></span>curl <span class="nv">$ade_url</span> <span class="p">|</span>
+</pre></div>
+<p>On récupère en ligne le fichier ics à traiter</p>
+<div class="highlight"><pre><span></span>grep -F <span class="s2">&quot;</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$patterns</span> <span class="p">|</span> tr <span class="s1">&#39; &#39;</span> <span class="s1">&#39;\n&#39;</span><span class="k">)</span><span class="s2">&quot;</span> <span class="p">|</span>
+</pre></div>
+<p>On ne garde que les lignes qui nous intéressent, <em>i.e.</em> celle commençant
+par un des motifs suivants (ceux entre guillemets) :</p>
+<div class="highlight"><pre><span></span><span class="nv">patterns</span><span class="o">=</span><span class="s2">&quot;DTSTART DTEND SUMMARY LOCATION DESCRIPTION&quot;</span>
+</pre></div>
+<p>L'option <tt class="docutils literal"><span class="pre">-F</span></tt> de <tt class="docutils literal">grep</tt> permet de chercher les lignes matchant un
+certains nombre de sous-chaines (<strong>attention, ce ne sont PAS des
+regex</strong>).</p>
+<p><tt class="docutils literal"><span class="pre">-F</span></tt> attend une liste de sous-chaines séparés par un saut de ligne
+(<tt class="docutils literal">\n</tt>), d'ou le <tt class="docutils literal">tr</tt> qui ici permet de remplacer les espaces par des
+sauts de lignes. Le résultat est passé sous forme de chaine à <tt class="docutils literal">grep</tt>
+(d'où le <tt class="docutils literal"><span class="pre">$(...)</span></tt>).</p>
+<div class="highlight"><pre><span></span>tr <span class="s1">&#39; &#39;</span> <span class="s1">&#39;~ &#39;</span> <span class="p">|</span>
+</pre></div>
+<p>J'avais besoin de protéger les espaces existants, je les remplace donc
+par un symbole <tt class="docutils literal">~</tt> que je ne risque pas de trouver dans le fichier.</p>
+<div class="highlight"><pre><span></span>tr <span class="s1">&#39;:&#39;</span> <span class="s1">&#39; &#39;</span>  <span class="p">|</span>
+</pre></div>
+<p>Dans la suite, j'utilise <tt class="docutils literal">awk</tt> dont le délimiteur par défaut est une
+espace, aussi remplace-je les <tt class="docutils literal">:</tt> séparant les 2 champs à traiter par
+un espace pour alléger le script <tt class="docutils literal">awk</tt>.</p>
+<div class="highlight"><pre><span></span>sed -e <span class="s1">&#39;s/(.*$//g&#39;</span> <span class="p">|</span>
+</pre></div>
+<p>Certaines lignes (celles commençant par <em>&quot;DESCRIPTION&quot;</em>) comprenait à
+leur fin un truc parenthèsé qui était moche et ne me servait pas, je le
+vire donc.</p>
+<p>Si on &quot;traduit&quot; la <em>regex</em> ci dessus, on trouve <em>&quot;remplacer (``s``) tout
+(``.*``) ce qui l'y a après la première parenthèse ouvrante (``(``) par
+rien&quot;</em>.</p>
+<div class="highlight"><pre><span></span>awk <span class="s1">&#39;</span>
+<span class="s1">    /DTSTART/       { print &quot;\n------\n\nDébut &quot; $2}</span>
+<span class="s1">    /DTEND/         { print &quot;Fin &quot; $2}</span>
+<span class="s1">    /SUMMARY/       { print &quot;Résumé &quot; $2}</span>
+<span class="s1">    /LOCATION/      { print &quot;Lieu &quot; $2}</span>
+<span class="s1">    /DESCRIPTION/   { print &quot;Description &quot; $2}</span>
+<span class="s1">    &#39;</span> <span class="p">|</span>
+</pre></div>
+<p>Les mots de gauche sont remplacés par ceux de droite, le <tt class="docutils literal">$2</tt> servant
+à remettre le second champ (après le <tt class="docutils literal">:</tt> qu'on a remplacé par une
+espace tout à l'heure) à la fin de la ligne.</p>
+<div class="highlight"><pre><span></span>sed -e <span class="s1">&#39;s/ /\n\t/&#39;</span> <span class="p">|</span>
+</pre></div>
+<p>On fait un bout de formatage : l'espace séparant les deux champs est
+maintenant remplacé par un saut de ligne et une tabulation (<tt class="docutils literal">\t</tt>).</p>
+<div class="highlight"><pre><span></span>sed -e <span class="s1">&#39;s/\(\\n\|~\)/ /g&#39;</span> <span class="p">|</span>
+</pre></div>
+<p>Les sauts de ligne présents depuis le début (codés &quot;en dur&quot; dans le
+fichier) et les <em>tilde</em> (<tt class="docutils literal">~</tt>) sont remplacés par une espace.</p>
+<p>Notez que j'ai protégé le premier backslash (devant le <tt class="docutils literal">n</tt>) en
+réalité, je ne veux pas matcher le saut de ligne mais bien la
+sous-chaine <tt class="docutils literal">\n</tt>.</p>
+<div class="highlight"><pre><span></span>sed -e <span class="s1">&#39;s/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)T\([0-9]\{2\}\)</span>
+<span class="s1">   \([0-9]\{2\}\)\([0-9]\{2\}\)Z/Le \3\/\2\/\1 à \4h\5/g&#39;</span>
+</pre></div>
+<p>Celle là, elle pique. Allons y doucement</p>
+<div class="highlight"><pre><span></span>sed -e              <span class="c1"># on lance la commande sed avec l&#39;expression suivante :</span>
+    <span class="s1">&#39;s/             # remplacer</span>
+<span class="s1">    \([0-9]\{4\}\)  # 4 chiffres (et les retenir)</span>
+<span class="s1">    \([0-9]\{2\}\)  # puis 2 chiffres (et les retenir)</span>
+<span class="s1">    \([0-9]\{2\}\)  # puis 2 chiffres (et les retenir)</span>
+<span class="s1">    T               # puis un &#39;</span>T<span class="s1">&#39;</span>
+<span class="s1">    \([0-9]\{2\}\)  # puis 2 chiffres (et les retenir)</span>
+<span class="s1">    \([0-9]\{2\}\)  # puis 2 chiffres (et les retenir)</span>
+<span class="s1">    \([0-9]\{2\}\)  # puis 2 chiffres (et les retenir)</span>
+<span class="s1">    Z               # puis un &#39;</span>Z<span class="s1">&#39;</span>
+<span class="s1">    /               # par</span>
+<span class="s1">    Le \3           # &#39;</span>Le <span class="s1">&#39; suivi du 3ème motif retenu</span>
+<span class="s1">    \/              # suivi d&#39;</span>un <span class="s1">&#39;/&#39;</span>
+    <span class="se">\2</span>              <span class="c1"># suivi du 2ème motif retenu</span>
+    <span class="se">\/</span>              <span class="c1"># suivi d&#39;un &#39;/&#39;</span>
+    <span class="se">\1</span>              <span class="c1"># suivi du 1er motif retenu</span>
+     à              <span class="c1"># suivi de &#39; à &#39;</span>
+    <span class="se">\4</span>              <span class="c1"># suivi du 4ème motif retenu</span>
+    h               <span class="c1"># suivi de &#39; h &#39;</span>
+    <span class="se">\5</span>              <span class="c1"># suivi du 5ème motif retenu</span>
+    /g<span class="err">&#39;</span>             <span class="c1"># le tout de manière globale (plusieurs fois /ligne si besoin)</span>
+</pre></div>
+<p>On &quot;retient&quot; un motif en l'entourant de <tt class="docutils literal">\(</tt> et <tt class="docutils literal">\)</tt>. Notez par
+ailleurs que je ne réutilise pas le motif 6, les parenthèses seraient
+donc optionnelles.</p>
+<p><strong>Que fait cette chose ?</strong></p>
+<p>Ça transforme une date de ce format :</p>
+<pre class="literal-block">
+20120327T06450000Z
+</pre>
+<p>Vers celui ci</p>
+<pre class="literal-block">
+Le 27/03/2012 à 06h45
+</pre>
+<p>Et croyez moi, j'étais un peu rouillé niveau regexs, là, ça a piqué !</p>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>Parfois, il n'est pas utile de sortir un langage hyper-évolué, ce cas
+est un exemple parmi d'autres.</p>
+<p>Notons tout de même que je vais essayer d'inclure ça dans un script un
+peu mieux fait (et peut être de l'inclure dans <em>teuse</em>, un bot irc en
+perl).</p>
+<p>J'ai noté que certains modules perl permettaient de <em>parser</em>
+&quot;facilement&quot; des fichiers <strong>ics</strong>. En utilisant par exemple
+<tt class="docutils literal"><span class="pre">Data::ICal</span></tt>, on peut envisager une base comme ça :</p>
+<div class="highlight"><pre><span></span><span class="k">use</span> <span class="nn">LWP::Simple</span><span class="p">;</span>
+<span class="k">use</span> <span class="nn">Data::ICal</span><span class="p">;</span>
+
+<span class="k">my</span> <span class="nv">$url</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">;</span> <span class="c1"># mettez l&#39;url là</span>
+<span class="k">my</span> <span class="nv">$raw_data</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="nv">$url</span><span class="p">);</span>
+<span class="k">my</span> <span class="nv">$parsed_data</span> <span class="o">=</span> <span class="nn">Data::ICal</span><span class="o">-&gt;</span><span class="k">new</span><span class="p">(</span><span class="n">data</span> <span class="o">=&gt;</span> <span class="nv">$raw_data</span><span class="p">);</span>
+
+<span class="c1"># utilisation des données...</span>
+</pre></div>
+<p>Voilà donc pour les quelques possibilités que j'explorerais peut être
+plus en détail un peu plus tard ;)</p>
+<p>A la prochaine !</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

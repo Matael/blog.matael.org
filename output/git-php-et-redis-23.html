@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="git" />
+		<meta name="tags" content="redis" />
+		<meta name="tags" content="php" />
+		<meta name="tags" content="fac" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>Git, PHP et redis 2/3</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:25:43+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/git.html">git</a></li>
+				<li><a href="/tag/redis.html">redis</a></li>
+				<li><a href="/tag/php.html">php</a></li>
+				<li><a href="/tag/fac.html">fac</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>Après avoir planté correctement le décor, passons à la pratique : faire
+collaborer redis et git.</p>
+<div class="section" id="redis-et-git">
+<h2>Redis et Git</h2>
+<p><a class="reference external" href="http://git-scm.org">git</a> est un gestionnaire de versions distribué
+que l'on ne présente plus. Extrèmement puissant, il est utilisé pour de
+nombreux projet et aussi pour le backend de ce blog et du site présenté
+en <a class="reference external" href="/writing/git-php-et-redis-13">première partie</a>.</p>
+<p><a class="reference external" href="http://redis.io">redis</a> est un système de stockage clé-valeur NoSQL
+puissant et souple. De nombreuses interfaces existent notamment une en
+ligne de commande <tt class="docutils literal"><span class="pre">redis-cli</span></tt> et de nombreuses bibliothèques PHP (dont
+<a class="reference external" href="https://github.com/nicolasff/phpredis">phpredis</a>.</p>
+<blockquote>
+<p><strong>Note:</strong></p>
+<p>Mon serveur tourne sous Debian 6.0, cet article sera donc présenté
+du point de vue d'une distro Debian.</p>
+<p>Les instructions ne devraient pas être difficiles à reproduire
+ailleurs.</p>
+</blockquote>
+</div>
+<div class="section" id="redis">
+<h2>Redis</h2>
+<p>Présentons (très) succintement l'installation et quelques commandes .</p>
+<div class="section" id="installation">
+<h3>Installation</h3>
+<p>Par le plus grand des hasards, la méthode classique marche :</p>
+<div class="highlight"><pre><span></span>sudo apt-get install redis-server
+</pre></div>
+<p>La documentation est dans le paquet <tt class="docutils literal"><span class="pre">redis-doc</span></tt>.</p>
+<p>Le gros désavantage de cette méthode est de ne fournir que la version
+1.2.6 alors que redis est passé dernièrement en 2.4.5...</p>
+<p>Bien que cette version suffise pour ce que nous allons faire, c'est un
+peu dommage. Restent plusieurs moyens pour l'<em>upgrade</em> :</p>
+<ul class="simple">
+<li>passer par les <strong>backports</strong> (version 2.4.2)</li>
+<li>récupèrer le .deb depuis wheezy ou sid</li>
+<li>compiler les sources</li>
+</ul>
+<p>La dernière méthode est simplissime :</p>
+<div class="highlight"><pre><span></span>wget http://redis.googlecode.com/files/redis-2.4.5.tar.gz
+tar zxvf redis-2.4.5.tar.gz
+<span class="nb">cd</span> redis-2.4.5
+make
+make <span class="nb">test</span>
+</pre></div>
+<p>Puis, si les tests ont réussi :</p>
+<div class="highlight"><pre><span></span>make install
+</pre></div>
+<p>Dans le cas de l'installation depuis les paquets, le serveur redis est
+lancé automatiquement.</p>
+<p>Via les sources, il faudra le lancer avec</p>
+<div class="highlight"><pre><span></span>redis-server
+</pre></div>
+<p>Vous pourrez alors vérifier la version comme suit :</p>
+<div class="highlight"><pre><span></span>$ redis-cli INFO <span class="p">|</span> grep version
+redis_version:2.4.5
+</pre></div>
+</div>
+<div class="section" id="la-base-de-la-base">
+<h3>La base de la base</h3>
+<p>Redis stocke des couples clé-valeur. Les clés sont des <em>strings</em>, les
+valeurs peuvent être n'importe quelle structure de données (string,
+nombre, liste, tableau, hash, etc...). Notez que toutes les structures
+ne sont pas forcément gérées par toutes les modules des langages.</p>
+<p>Vous pouvez démarrer un client vers le serveur avec</p>
+<div class="highlight"><pre><span></span>redis-cli
+</pre></div>
+<p>Sachant que le serveur écoute sur le port 6379 par défaut, vous pouvez
+aussi utiliser <tt class="docutils literal">telnet</tt> :</p>
+<div class="highlight"><pre><span></span>telnet localhost <span class="m">6379</span>
+</pre></div>
+</div>
+<div class="section" id="ajouter-un-couple">
+<h3>Ajouter un couple</h3>
+<p>Nous avons déjà vu une commande <tt class="docutils literal">INFO</tt> qui renvoie des infos sur le
+serveur.</p>
+<p>On a aussi accès à <tt class="docutils literal">SET</tt> et <tt class="docutils literal">GET</tt> :</p>
+<div class="highlight"><pre><span></span>$ redis-cli
+redis&gt; SET foo <span class="s2">&quot;bar&quot;</span>
+OK
+redis&gt; GET foo
+<span class="s2">&quot;bar&quot;</span>
+</pre></div>
+<p>Ce seront les seules commandes dont nous nous servirons ici, mais sachez
+que d'autres existent, <tt class="docutils literal">KEYS</tt> par exemple récupère la liste des clés :</p>
+<div class="highlight"><pre><span></span>redis&gt; KEYS *
+<span class="m">1</span><span class="o">)</span> <span class="s2">&quot;foo&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="git-et-les-hooks">
+<h2>git et les hooks</h2>
+<p>Comme j'utilise <a class="reference external" href="http://git-scm.org">git</a> pour gèrer les versions, il
+serait sympa de pouvoir ajouter les nouvelles clés à
+<a class="reference external" href="http://redis.io">redis</a> à chaque <tt class="docutils literal">git pull</tt>.</p>
+<p>Je ne vais pas me lancer ici dans une intro à git : plein d'articles et
+de sites en parlent très bien et vous pourrez toujours jeter un oeil à
+<a class="reference external" href="http://progit.org/book.html">ce livre</a> pour une excellent base.</p>
+<p>Sachez que git possède un très puissant système de <em>hooks</em>. Vous pouvez
+ainsi appeller un script juste avant chaque commit, push, ou comme ici :
+chaque pull (et à plein d'autre moments).</p>
+<p>Ces scripts sont à placer dans le dépot même, précisément dans le
+répertoire <tt class="docutils literal"><span class="pre">./.git/hooks/</span></tt>.</p>
+<p>Le nom détermine le moment d'appel, ainsi celui qui nous intéresse ici
+est le <em>hook</em> nommé <tt class="docutils literal"><span class="pre">post-merge</span></tt>.</p>
+<p>Pour le reste, c'est simplement du bash ;)</p>
+<div class="section" id="principe-du-script">
+<h3>Principe du script</h3>
+<p>On doit parcourir chacun des dossiers dans <tt class="docutils literal">./src/</tt>, puis chacun des
+fichiers dans ces dossiers (ça sent la double <tt class="docutils literal">for</tt>).</p>
+<p>Ensuite, il ne faut garder que la première ligne de chaque fichier
+(<tt class="docutils literal">head</tt> fait ça très bien) et l'ajouter à redis si elle commence par
+un <tt class="docutils literal">#</tt> (un titre en
+<a class="reference external" href="http://daringfireball.net/projects/markdown/">Markdown</a>) tout en
+virant ce dièse (on se moque des espaces, HTML ne les prend pas en
+compte).</p>
+</div>
+<div class="section" id="le-script">
+<h3>Le script</h3>
+<div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="k">for</span> folder in <span class="sb">`</span>ls src<span class="sb">`</span>
+<span class="k">do</span>
+    <span class="k">for</span> file in <span class="sb">`</span>ls src/<span class="nv">$folder</span><span class="sb">`</span>
+    <span class="k">do</span>
+        <span class="nv">file_uniq_name</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$folder</span><span class="s2">/</span><span class="nv">$file</span><span class="s2">&quot;</span>
+        <span class="nb">echo</span> <span class="s2">&quot;+-&gt; Adding line for key : </span><span class="nv">$file_uniq_name</span><span class="s2">&quot;</span>
+        <span class="nv">line</span><span class="o">=</span><span class="sb">`</span>head -n <span class="m">1</span> src/<span class="nv">$folder</span>/<span class="nv">$file</span> <span class="p">|</span> grep ^# <span class="p">|</span> cut -d <span class="s1">&#39;#&#39;</span> -f <span class="m">2</span><span class="sb">`</span>
+        redis-cli SET exosfac:<span class="nv">$file_uniq_name</span> <span class="s2">&quot;</span><span class="nv">$line</span><span class="s2">&quot;</span>
+    <span class="k">done</span>
+<span class="k">done</span>
+</pre></div>
+<p>Dans la seconde boucle :</p>
+<ol class="arabic simple">
+<li>La première ligne stocke dans <tt class="docutils literal">$file_uniq_name</tt> une chaine du genre <tt class="docutils literal">&quot;dossier/fichier&quot;</tt> dont on est sûr qu'elle soit unique</li>
+<li>La seconde ligne est juste là pour faire un joli affichage</li>
+<li>La troisième ligne stocke dasn <tt class="docutils literal">$line</tt> la première ligne du fichier si elle commence par un dièse et après l'avoir supprimé (le dièse)</li>
+<li>La dernière ligne stocke dans redis la ligne <tt class="docutils literal">$line</tt> sous la forme <tt class="docutils literal">exosfac:dossier/fichier</tt>.</li>
+</ol>
+<p>Le <tt class="docutils literal">exosfac:</tt> devant permet de créer des sortes de sous-ensembles de
+clés tacites.</p>
+<p>De plus, vu notre PHP de base (voir <a class="reference external" href="/writing/git-php-et-redis-13">première partie</a>) permettra facilement de
+reconstruire cette clé.</p>
+<p>Voilà, il ne nous reste plus qu'a écrire un peu de PHP et nous aurons la
+première ligne de chaque fichier à côté de son nom sans pour autant
+massacrer le disque ;).</p>
+</div>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>

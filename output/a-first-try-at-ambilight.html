@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<title>Thinking at Random</title>
+		<meta charset="utf-8" />
+
+
+		<meta name="tags" content="python" />
+		<meta name="tags" content="arduino" />
+		<meta name="tags" content="opencv" />
+		<meta name="tags" content="ambilight" />
+		<meta name="tags" content="imported" />
+
+		<link rel=stylesheet/less type=text/css media=screen href="/theme/css/style.css" />
+		<link rel=stylesheet type=text/css media=screen href="/theme/css/pygment.css" />
+		<script src="/theme/js/less.min.js"></script>
+	</head>
+
+	<body>
+		<div id=logo><div id=logo-wrapper>
+			<header>
+				<h1><a href="/"<span class=overbar><span class=big>t</span>hinking <span class=accent>at</span> <span class=big>r</span>andom</span></a></h1>
+			</header>
+			<nav>
+				<ul>
+					<li><a href="/">Writing</a></li>
+					<li><a href="https://github.com/Matael">Github</a></li>
+					<li><a href="https://matael.org">About</a></li>
+				</ul>
+			</nav>
+		</div></div>
+		<div id=page>
+<section id=content>
+	<header>
+		<h1>A first try at ambilight</h1>
+		
+	</header>
+	<article>
+
+	<div id=meta>
+		<p class=by-line>Published by 
+				<a href="/author/matael.html" class=author>matael</a>
+		</p>
+		<p>On <time datetime="2015-01-04T11:28:40+01:00">Sun 04 January 2015</span></p>
+		<ul class=tags>
+				<li><a href="/tag/python.html">python</a></li>
+				<li><a href="/tag/arduino.html">arduino</a></li>
+				<li><a href="/tag/opencv.html">opencv</a></li>
+				<li><a href="/tag/ambilight.html">ambilight</a></li>
+				<li><a href="/tag/imported.html">imported</a></li>
+		</ul>
+	</div>
+	<div id=article_body>
+		<p>As probably some of you know, <a class="reference external" href="http://en.wikipedia.org/wiki/Ambilight">Ambilight</a> is a commercial system developped by Philips.
+As Wikipedia says, <em>AmbiLight</em> goes for <em>Ambient Lighthing</em>.</p>
+<p>The concept behind Ambilight is that immersion is better if the ambient light (hue and brightness) is close to those
+displayed on screen. Ambilight goes even further adapting projected light's hue to what appear on the corresponding side
+of the screen. This system is close to extension of images outside screen.</p>
+<p>This article will only talk about simple tests using Python to compute average color of strips on both right and left sides of an
+image.</p>
+<p>During all the experiments, we'll use the <tt class="docutils literal">cv2</tt> lib for Python2.x : this lib provides plenty of bindings between Python
+and <a class="reference external" href="http://opencv.org/">OpenCV</a>.</p>
+<p>On Ubuntu, just install :</p>
+<div class="highlight"><pre><span></span>sudo apt-get install python-opencv
+</pre></div>
+<p>On Arch, please note that some of the OpenCV bindings packages on the <a class="reference external" href="https://aur.archlinux.org/packages/?O=0&amp;K=opencv">AUR</a> are flagged as out-of-date. But you are an
+Archer thus you'll find a way to install that lib, either using <tt class="docutils literal">pacman</tt> or <tt class="docutils literal">pip</tt> (or a combination of both).</p>
+<div class="section" id="first-test-one-strip-per-side-on-a-picture">
+<h2>First test : one strip per side on a picture</h2>
+<p>This first test was the hardest for me : I didn't know anything about <a class="reference external" href="http://opencv.org/">OpenCV</a> before and I had to learn on the fly.
+Note that, in these moments <a class="reference external" href="http://stackoverflow.com/">StackOverflow</a> becomes one of your best friends...</p>
+<img alt="" class="align-center" src="/static/images/ambilight/masks_principle.png" style="width: 800px;" />
+<p>The concept is quite simple :</p>
+<ul class="simple">
+<li>get a image (from webcam or HDD) (left pic)</li>
+<li>apply a mask on its both sides (two masks actually, they are drawn on the middle image)</li>
+<li>compute separatly the average color of each strip</li>
+<li>draw a rectangle which color is the average and the size corresponding to the area averaged (finally, the right image)</li>
+</ul>
+<p>Let's see how we can achieve that in Python.</p>
+<div class="section" id="getting-an-image">
+<h3>Getting an image</h3>
+<p>With <a class="reference external" href="http://opencv.org/">OpenCV</a>, you can get images/films either through your webcam or directly from your hard drive.</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cv2</span>
+
+<span class="c1"># read from a file</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="s1">&#39;filename&#39;</span><span class="p">)</span>
+
+<span class="c1"># read from a cam</span>
+<span class="n">cam</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="n">O</span><span class="p">)</span> <span class="c1"># 0 is cam ID</span>
+<span class="n">_</span><span class="p">,</span><span class="n">f</span> <span class="o">=</span> <span class="n">cam</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="c1"># _ contains ret. value</span>
+<span class="c1"># f contains image</span>
+</pre></div>
+<p>You have to know that all images objects created by <tt class="docutils literal">cv2</tt> are <tt class="docutils literal">numpy</tt> arrays ; just remember to include this useful
+lib (you'll need it for masking) :</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<div class="section" id="getting-dimensions-and-creating-masks">
+<h3>Getting dimensions and creating masks</h3>
+<p>Now, we'll create two numpy arrays with exactly the same dimensions as the image :</p>
+<div class="highlight"><pre><span></span><span class="c1"># total width</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="c1"># total height</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># 5% of l, this will be the width of averaged band</span>
+<span class="n">bandwidth</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">l</span><span class="o">*</span><span class="mf">0.05</span><span class="p">)</span> <span class="c1"># 5% of total width</span>
+
+<span class="c1"># create masks</span>
+<span class="c1"># simple np arrays full of 0s :)</span>
+<span class="n">mask_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">h</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="n">mask_right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">h</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">h</span><span class="p">):</span> <span class="c1"># full height</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">bandwidth</span><span class="p">):</span>
+        <span class="n">mask_left</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">mask_right</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">l</span><span class="o">-</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+<p>For <tt class="docutils literal">cv2</tt> a mask is just a <tt class="docutils literal">numpy</tt> array (with same dimensions as the image). Area containing ones are shown through
+this masks and those containing zeros are not.</p>
+</div>
+<div class="section" id="averaging-and-drawing-rectangles">
+<h3>Averaging and drawing rectangles</h3>
+<p>The easiest part :)</p>
+<p>OpenCV offers the <tt class="docutils literal">mean()</tt> function to compute average color and this function can take a mask as parameter. So :</p>
+<div class="highlight"><pre><span></span><span class="n">val_left</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask_left</span><span class="p">)</span>
+<span class="n">val_right</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask_right</span><span class="p">)</span>
+</pre></div>
+<p>Finally we have to draw our rectangles and save the new image :</p>
+<div class="highlight"><pre><span></span><span class="c1"># thickness=-1 cause the rectangle to be filled</span>
+<span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">bandwidth</span><span class="p">,</span><span class="n">h</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">val_left</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="p">(</span><span class="n">l</span><span class="o">-</span><span class="n">bandwidth</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="n">h</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">val_right</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># just save !</span>
+<span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="s1">&#39;test1.png&#39;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+</pre></div>
+<p>And here we are \o/ !</p>
+<p>Hum, it has to be mentionned that OpenCV doc recommends to work on copied images in order to save the original.
+Here, the source code doesn't do that, but you have to know this is a common (and encouraged) practice.</p>
+</div>
+</div>
+<div class="section" id="second-test-more-details">
+<h2>Second test : more details</h2>
+<p>Ok, now we have a beautiful example with one strip per side, let's try to improve that a bit.</p>
+<p>We'll try to divide each side in <tt class="docutils literal">nb</tt> regions.</p>
+<p>Let's take a look at the wole code at once since it's not extremely different from the previous one :</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="c1"># instanciate CAM object</span>
+<span class="n">cam</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># get one image to process</span>
+<span class="n">_</span><span class="p">,</span><span class="n">f</span> <span class="o">=</span> <span class="n">cam</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+<span class="c1"># get total width/height</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># select number of regions</span>
+<span class="n">nb</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="c1"># compute height and width of each region</span>
+<span class="n">dh</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">nb</span><span class="p">)</span>
+<span class="n">bandwidth</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">l</span><span class="o">*</span><span class="mf">0.05</span><span class="p">)</span> <span class="c1"># 5% of total width</span>
+
+<span class="c1"># for each region</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
+
+    <span class="c1"># create masks</span>
+    <span class="n">mask_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">h</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="n">mask_right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">h</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">dh</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">bandwidth</span><span class="p">):</span>
+            <span class="n">mask_left</span><span class="p">[</span><span class="n">dh</span><span class="o">*</span><span class="n">k</span><span class="o">+</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">mask_right</span><span class="p">[</span><span class="n">dh</span><span class="o">*</span><span class="n">k</span><span class="o">+</span><span class="n">i</span><span class="p">][</span><span class="n">l</span><span class="o">-</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c1"># compute averages</span>
+    <span class="n">val_left</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask_left</span><span class="p">)</span>
+    <span class="n">val_right</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask_right</span><span class="p">)</span>
+
+    <span class="c1"># draw rectangles</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">dh</span><span class="o">*</span><span class="n">k</span><span class="p">),</span> <span class="p">(</span><span class="n">bandwidth</span><span class="p">,</span><span class="n">dh</span><span class="o">*</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">)),</span> <span class="n">color</span><span class="o">=</span><span class="n">val_left</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="p">(</span><span class="n">l</span><span class="o">-</span><span class="n">bandwidth</span><span class="p">,</span><span class="n">dh</span><span class="o">*</span><span class="n">k</span><span class="p">),</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="n">dh</span><span class="o">*</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">)),</span> <span class="n">color</span><span class="o">=</span><span class="n">val_right</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="s1">&#39;test2.png&#39;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+</pre></div>
+<p>Ok, except the mindf*ck behind coordinates, all the process was quite easy. And the result looks nice :</p>
+<img alt="" class="align-right" src="/static/images/ambilight/multi.png" style="width: 450px;" />
+<div class="section" id="timeit">
+<h3>Timeit</h3>
+<p>Creating a function around this code, I've been able to <tt class="docutils literal">%timeit</tt> inside iPython ::</p>
+<pre class="literal-block">
+In [10]: %timeit ambi
+1000000 loops, best of 3: 189 ns per loop
+</pre>
+<p>I don't really know if this measurement is accurate but, if it is, we have a really nice system :)</p>
+</div>
+</div>
+<div class="section" id="third-test-a-webcam-video">
+<h2>Third test : a webcam video</h2>
+<p>The last test that'll be covered in this article is just a small tweak of the previous one :</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="c1"># instanciate CAM object</span>
+<span class="n">cam</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># get one image to process</span>
+<span class="n">_</span><span class="p">,</span><span class="n">f</span> <span class="o">=</span> <span class="n">cam</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+<span class="c1"># get total width/height</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># select number of regions</span>
+<span class="n">nb</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="c1"># compute height and width of each region</span>
+<span class="n">dh</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">nb</span><span class="p">)</span>
+<span class="n">bandwidth</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">l</span><span class="o">*</span><span class="mf">0.05</span><span class="p">)</span> <span class="c1"># 5% of total width</span>
+
+<span class="c1"># act continuously</span>
+<span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+
+    <span class="c1"># get one image to process</span>
+    <span class="n">_</span><span class="p">,</span><span class="n">f</span> <span class="o">=</span> <span class="n">cam</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="c1"># for each region</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
+
+        <span class="c1"># create masks</span>
+        <span class="n">mask_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">h</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="n">mask_right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">h</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">dh</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">bandwidth</span><span class="p">):</span>
+                <span class="n">mask_left</span><span class="p">[</span><span class="n">dh</span><span class="o">*</span><span class="n">k</span><span class="o">+</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">mask_right</span><span class="p">[</span><span class="n">dh</span><span class="o">*</span><span class="n">k</span><span class="o">+</span><span class="n">i</span><span class="p">][</span><span class="n">l</span><span class="o">-</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># compute averages</span>
+        <span class="n">val_left</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask_left</span><span class="p">)</span>
+        <span class="n">val_right</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask_right</span><span class="p">)</span>
+
+        <span class="c1"># draw rectangles</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">dh</span><span class="o">*</span><span class="n">k</span><span class="p">),</span> <span class="p">(</span><span class="n">bandwidth</span><span class="p">,</span><span class="n">dh</span><span class="o">*</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">)),</span> <span class="n">color</span><span class="o">=</span><span class="n">val_left</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="p">(</span><span class="n">l</span><span class="o">-</span><span class="n">bandwidth</span><span class="p">,</span><span class="n">dh</span><span class="o">*</span><span class="n">k</span><span class="p">),</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="n">dh</span><span class="o">*</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">)),</span> <span class="n">color</span><span class="o">=</span><span class="n">val_right</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># show image instead one saving it</span>
+    <span class="c1"># &#39;w1 is the window reference</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="s1">&#39;w1&#39;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+</pre></div>
+<p>As you can see, the wideo is pretty smooth and reactive.</p>
+</div>
+<div class="section" id="and-now">
+<h2>And now ?</h2>
+<p>Now we have a better idea about how to process an image to extract color info from its sides, we'll be able to go
+further.</p>
+<p>With some others guys from HAUM (local hackerspace) we'll try to build the complete system using leds and arduino.</p>
+<p>We just wanna recreate this system for fun, and, as I'm writing, another idea comes to my mind : what about trying to
+adapt general ambient light (not only next to screen) to the action on-screen ?</p>
+</div>
+
+	</article>
+</section>
+		</div>
+		<div class=clear>&nbsp;</div>
+		<footer>
+			<p id=legal>Proudly powered by Pelican &mdash; 2017 &mdash; Mathieu (matael) Gaborit</p>
+		</footer>
+	</body>
+</html>
