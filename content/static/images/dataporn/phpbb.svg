@@ -1,0 +1,392 @@
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"
+  "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+
+  
+<svg width="600" height="700" viewBox="0 0 600 700" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<!-- \\\\\\\\\\\\\\\\\\\\\\\\\\\\  -->
+<!-- Created with SVG::TT::Graph   -->
+<!-- Stephen Morgan / Leo Lapworth -->
+<!-- ////////////////////////////  -->
+<!-- include default stylesheet if none specified -->
+<defs>
+<style type="text/css">
+<![CDATA[
+/* Copy from here for external style sheet */
+.svgBackground{
+  fill:#ffffff;
+  /* set 'fill: none;' and then include 'wmode="transparent"'
+   in the HTML embed tag if you need the SVG transparent */
+}
+.graphBackground{
+  fill:#f0f0f0;
+}
+
+/* graphs titles */
+.mainTitle{
+  text-anchor: middle;
+  fill: #000000;
+  font-size: 14px;
+  font-family: "Arial", sans-serif;
+  font-weight: bold;
+}
+.subTitle{
+  text-anchor: middle;
+  fill: #999999;
+  font-size: 12px;
+  font-family: "Arial", sans-serif;
+  font-weight: normal;
+}
+
+.axis{
+  stroke: #000000;
+  stroke-width: 1px;
+}
+
+.guideLines{
+  stroke: #666666;
+  stroke-width: 1px;
+  stroke-dasharray: 5 5;
+}
+
+.xAxisLabels{
+  text-anchor: middle;
+  fill: #000000;
+  font-size: 12px;
+  font-family: "Arial", sans-serif;
+  font-weight: normal;
+}
+
+.yAxisLabels{
+  text-anchor: end;
+  fill: #000000;
+  font-size: 12px;
+  font-family: "Arial", sans-serif;
+  font-weight: normal;
+}
+
+.xAxisTitle{
+  text-anchor: middle;
+  fill: #ff0000;
+  font-size: 14px;
+  font-family: "Arial", sans-serif;
+  font-weight: normal;
+}
+
+.yAxisTitle{
+  fill: #ff0000;
+  text-anchor: middle;
+  font-size: 14px;
+  font-family: "Arial", sans-serif;
+  font-weight: normal;
+}
+
+.dataPointLabel{
+  fill: #000000;
+  text-anchor:middle;
+  font-size: 10px;
+  font-family: "Arial", sans-serif;
+  font-weight: normal;
+}
+.staggerGuideLine{
+  fill: none;
+  stroke: #000000;
+  stroke-width: 0.5px;
+}
+
+          
+  .key1,.fill1{
+    fill: #ff0000;
+    fill-opacity: 0.5;
+    stroke: none;
+    stroke-width: 0.5px;
+  }
+
+  
+.keyText{
+  fill: #000000;
+  text-anchor:start;
+  font-size: 10px;
+  font-family: "Arial", sans-serif;
+  font-weight: normal;
+}
+/* End copy for external style sheet */
+]]>
+</style>
+</defs>
+<!-- svg bg -->
+<rect x="0" y="0" width="600" height="700" class="svgBackground"/>
+  
+<!-- ///////////////// CALCULATE GRAPH AREA AND BOUNDARIES //////////////// -->
+<!-- get dimensions of actual graph area (NOT SVG area) -->
+
+<!-- set start/default coords of graph --> 
+
+
+<!-- CALC WIDTH AND X COORD DIMENSIONS -->
+<!-- reduce width of graph area if there is labelling on y axis -->
+    <!-- calculate largest label width and add margin accordingly -->
+                                                                                                                                                                    
+  
+    
+<!-- corrects space around graph when very small y labels are used -->
+
+<!-- pad ends of graph if there are x labels -->
+    <!-- if there are no y labels or titles BUT there are x labels, then pad left -->
+    <!-- adjust axis start position using the  first x label char lengths -->
+  
+
+<!-- CALC HEIGHT AND Y COORD DIMENSIONS -->
+<!-- reduce height of graph area if there is labelling on x axis -->
+
+<!-- stagger x labels if overlapping occurs -->
+
+
+<!-- pad top of graph if y axis has data labels so labels do not get chopped off -->
+
+<!-- reduce height if graph has title or subtitle -->
+
+  <!-- find largest dataset title for Key size -->
+          <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+    <!-- find largest dataset title for Key size -->
+  
+<!-- reduce graph dimensions if there is a KEY -->
+
+
+<!-- calc min and max values -->
+                                                                                                                                                                                                                                                                                                                                                        
+  
+<!-- base line -->
+
+<!-- how much padding above max point on graph -->
+  
+
+<!-- default to 10 scale_divisions if none have been set -->
+  
+        
+<!-- //////////////////////////////  BUILD GRAPH AREA ////////////////////////////// -->
+<!-- graph bg -->
+<rect x="84" y="45" width="496" height="635" class="graphBackground"/>
+
+<!-- axis -->
+<path d="M84 45 v635" class="axis" id="xAxis"/>
+<path d="M84 680 h496" class="axis" id="yAxis"/>
+
+<!-- //////////////////////////////  AXIS DISTRIBUTIONS //////////////////////////// -->
+<!-- get number of data points on y scale -->
+
+<!-- get distribution heights on y axis -->
+
+
+<!-- y axis labels -->
+                <text x="74" y="666" class="yAxisLabels">Arthur</text>
+                                  <text x="74" y="638" class="yAxisLabels">N3M1C0</text>
+                            <text x="74" y="610" class="yAxisLabels">Hilid</text>
+                            <text x="74" y="582" class="yAxisLabels">Natsu</text>
+                            <text x="74" y="554" class="yAxisLabels">matael</text>
+                            <text x="74" y="526" class="yAxisLabels">Elina</text>
+                            <text x="74" y="498" class="yAxisLabels">Erwan</text>
+                            <text x="74" y="470" class="yAxisLabels">S.C.S</text>
+                            <text x="74" y="442" class="yAxisLabels">Lucas</text>
+                            <text x="74" y="414" class="yAxisLabels">Sandrine</text>
+                            <text x="74" y="386" class="yAxisLabels">Klean</text>
+                            <text x="74" y="358" class="yAxisLabels">Tiwaz</text>
+                            <text x="74" y="330" class="yAxisLabels">Baptiste</text>
+                            <text x="74" y="302" class="yAxisLabels">Piou</text>
+                            <text x="74" y="274" class="yAxisLabels">Cyril Dannet</text>
+                            <text x="74" y="246" class="yAxisLabels">David</text>
+                            <text x="74" y="218" class="yAxisLabels">Rem's</text>
+                            <text x="74" y="190" class="yAxisLabels">Hitokage</text>
+                            <text x="74" y="162" class="yAxisLabels">Hippo</text>
+                            <text x="74" y="134" class="yAxisLabels">Mélanie</text>
+                            <text x="74" y="106" class="yAxisLabels">QGI</text>
+                            <text x="74" y="78" class="yAxisLabels">KUN</text>
+              
+
+<!-- distribute x scale -->
+<!-- ensure x_data_points butt up to edge of graph -->
+            <!-- no stroke for first line -->
+                  <text x="84" y="695" class="xAxisLabels"> 0</text>
+                                                    <text x="133" y="695" class="xAxisLabels" style="text-anchor: middle;">77.0</text>
+        <path d="M133 680 V45" class="guideLines"/>
+        <path d="M133 680 v0" class="staggerGuideLine" />
+                                                          <text x="182" y="695" class="xAxisLabels" style="text-anchor: middle;">154.0</text>
+        <path d="M182 680 V45" class="guideLines"/>
+                                                                  <text x="231" y="695" class="xAxisLabels" style="text-anchor: middle;">231.0</text>
+        <path d="M231 680 V45" class="guideLines"/>
+        <path d="M231 680 v0" class="staggerGuideLine" />
+                                                          <text x="280" y="695" class="xAxisLabels" style="text-anchor: middle;">308.0</text>
+        <path d="M280 680 V45" class="guideLines"/>
+                                                                  <text x="329" y="695" class="xAxisLabels" style="text-anchor: middle;">385.0</text>
+        <path d="M329 680 V45" class="guideLines"/>
+        <path d="M329 680 v0" class="staggerGuideLine" />
+                                                          <text x="378" y="695" class="xAxisLabels" style="text-anchor: middle;">462.0</text>
+        <path d="M378 680 V45" class="guideLines"/>
+                                                                  <text x="427" y="695" class="xAxisLabels" style="text-anchor: middle;">539.0</text>
+        <path d="M427 680 V45" class="guideLines"/>
+        <path d="M427 680 v0" class="staggerGuideLine" />
+                                                          <text x="476" y="695" class="xAxisLabels" style="text-anchor: middle;">616.0</text>
+        <path d="M476 680 V45" class="guideLines"/>
+                                                                  <text x="525" y="695" class="xAxisLabels" style="text-anchor: middle;">693.0</text>
+        <path d="M525 680 V45" class="guideLines"/>
+        <path d="M525 680 v0" class="staggerGuideLine" />
+                                                          <text x="574" y="695" class="xAxisLabels" style="text-anchor: middle;">770.0</text>
+        <path d="M574 680 V45" class="guideLines"/>
+                                
+
+
+
+<!-- //////////////////////////////  AXIS TITLES ////////////////////////////// -->
+
+<!-- x axis title -->
+
+<!-- y axis title -->
+
+
+<!-- //////////////////////////////  SHOW DATA ////////////////////////////// -->
+   
+
+
+
+  
+      <path d="M84 652 H112.636363636364 v18 H84 Z" class="fill1"/>
+
+
+          <text x="117.636363636364" y="666" class="dataPointLabel" style="text-anchor: start;">45</text>
+              
+      <path d="M84 624 H143.181818181818 v18 H84 Z" class="fill1"/>
+
+
+          <text x="148.181818181818" y="638" class="dataPointLabel" style="text-anchor: start;">93</text>
+              
+      <path d="M84 596 H131.727272727273 v18 H84 Z" class="fill1"/>
+
+
+          <text x="136.727272727273" y="610" class="dataPointLabel" style="text-anchor: start;">75</text>
+              
+      <path d="M84 568 H153.363636363636 v18 H84 Z" class="fill1"/>
+
+
+          <text x="158.363636363636" y="582" class="dataPointLabel" style="text-anchor: start;">109</text>
+              
+      <path d="M84 540 H335.363636363636 v18 H84 Z" class="fill1"/>
+
+
+          <text x="340.363636363636" y="554" class="dataPointLabel" style="text-anchor: start;">395</text>
+              
+      <path d="M84 512 H208.727272727273 v18 H84 Z" class="fill1"/>
+
+
+          <text x="213.727272727273" y="526" class="dataPointLabel" style="text-anchor: start;">196</text>
+              
+      <path d="M84 484 H198.545454545455 v18 H84 Z" class="fill1"/>
+
+
+          <text x="203.545454545455" y="498" class="dataPointLabel" style="text-anchor: start;">180</text>
+              
+      <path d="M84 456 H151.454545454545 v18 H84 Z" class="fill1"/>
+
+
+          <text x="156.454545454545" y="470" class="dataPointLabel" style="text-anchor: start;">106</text>
+              
+      <path d="M84 428 H549.181818181818 v18 H84 Z" class="fill1"/>
+
+
+          <text x="554.181818181818" y="442" class="dataPointLabel" style="text-anchor: start;">731</text>
+              
+      <path d="M84 400 H98.6363636363636 v18 H84 Z" class="fill1"/>
+
+
+          <text x="103.636363636364" y="414" class="dataPointLabel" style="text-anchor: start;">23</text>
+              
+      <path d="M84 372 H91 v18 H84 Z" class="fill1"/>
+
+
+          <text x="96" y="386" class="dataPointLabel" style="text-anchor: start;">11</text>
+              
+      <path d="M84 344 H100.545454545455 v18 H84 Z" class="fill1"/>
+
+
+          <text x="105.545454545455" y="358" class="dataPointLabel" style="text-anchor: start;">26</text>
+              
+      <path d="M84 316 H127.272727272727 v18 H84 Z" class="fill1"/>
+
+
+          <text x="132.272727272727" y="330" class="dataPointLabel" style="text-anchor: start;">68</text>
+              
+      <path d="M84 288 H109.454545454545 v18 H84 Z" class="fill1"/>
+
+
+          <text x="114.454545454545" y="302" class="dataPointLabel" style="text-anchor: start;">40</text>
+              
+      <path d="M84 260 H262.181818181818 v18 H84 Z" class="fill1"/>
+
+
+          <text x="267.181818181818" y="274" class="dataPointLabel" style="text-anchor: start;">280</text>
+              
+      <path d="M84 232 H106.909090909091 v18 H84 Z" class="fill1"/>
+
+
+          <text x="111.909090909091" y="246" class="dataPointLabel" style="text-anchor: start;">36</text>
+              
+      <path d="M84 204 H103.727272727273 v18 H84 Z" class="fill1"/>
+
+
+          <text x="108.727272727273" y="218" class="dataPointLabel" style="text-anchor: start;">31</text>
+              
+      <path d="M84 176 H96.7272727272727 v18 H84 Z" class="fill1"/>
+
+
+          <text x="101.727272727273" y="190" class="dataPointLabel" style="text-anchor: start;">20</text>
+              
+      <path d="M84 148 H94.1818181818182 v18 H84 Z" class="fill1"/>
+
+
+          <text x="99.1818181818182" y="162" class="dataPointLabel" style="text-anchor: start;">16</text>
+              
+      <path d="M84 120 H140.636363636364 v18 H84 Z" class="fill1"/>
+
+
+          <text x="145.636363636364" y="134" class="dataPointLabel" style="text-anchor: start;">89</text>
+              
+      <path d="M84 92 H199.181818181818 v18 H84 Z" class="fill1"/>
+
+
+          <text x="204.181818181818" y="106" class="dataPointLabel" style="text-anchor: start;">181</text>
+              
+      <path d="M84 64 H92.9090909090909 v18 H84 Z" class="fill1"/>
+
+
+          <text x="97.9090909090909" y="78" class="dataPointLabel" style="text-anchor: start;">14</text>
+            
+
+
+<!-- //////////////////////////////// KEY /////// ////////////////////////// -->
+
+<!-- //////////////////////////////// MAIN TITLES ////////////////////////// -->
+
+<!-- main graph title -->
+  <text x="300" y="15" class="mainTitle">Test de graphe</text>
+
+<!-- graph sub title -->
+          <text x="300" y="30" class="subTitle">Random forum</text>
+</svg>

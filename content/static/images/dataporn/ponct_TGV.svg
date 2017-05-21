@@ -1,0 +1,378 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns:a3="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" a3:scriptImplementation="Adobe" width="1200" viewBox="0 0 1200 700" height="700">
+  <!-- Created with SVG.Graph -->
+  <!-- SVG.Graph by Jason R. Coombs -->
+  <!-- Based on SVG::Graph by Sean E. Russel -->
+  <!-- Based on Perl SVG:TT:Graph by Leo Lapworth & Stephan Morgan -->
+  <!-- //////////////////////////////////////////////////////////////////-->
+  <defs>
+    <style type="text/css">/*&#13;
+$Id$&#13;
+&#13;
+Base styles for svg.charts.Graph&#13;
+*/
+.svgBackground {
+    fill: #fff
+    }
+.graphBackground {
+    fill: #f0f0f0
+    }
+/* graphs titles */
+.mainTitle {
+    text-anchor: middle;
+    fill: #000;
+    font-size: 16px;
+    font-family: "Arial", sans-serif;
+    font-weight: normal
+    }
+.subTitle {
+    text-anchor: middle;
+    fill: #999;
+    font-size: 14px;
+    font-family: "Arial", sans-serif;
+    font-weight: normal
+    }
+.axis {
+    stroke: #000;
+    stroke-width: 1px
+    }
+.guideLines {
+    stroke: #666;
+    stroke-width: 1px;
+    stroke-dasharray: 5, 5
+    }
+.xAxisLabels {
+    text-anchor: middle;
+    fill: #000;
+    font-size: 12px;
+    font-family: "Arial", sans-serif;
+    font-weight: normal
+    }
+.yAxisLabels {
+    text-anchor: end;
+    fill: #000;
+    font-size: 12px;
+    font-family: "Arial", sans-serif;
+    font-weight: normal
+    }
+.xAxisTitle {
+    text-anchor: middle;
+    fill: #f00;
+    font-size: 14px;
+    font-family: "Arial", sans-serif;
+    font-weight: normal
+    }
+.yAxisTitle {
+    fill: #f00;
+    text-anchor: middle;
+    font-size: 14px;
+    font-family: "Arial", sans-serif;
+    font-weight: normal
+    }
+.dataPointLabel {
+    fill: #000;
+    text-anchor: middle;
+    font-size: 10px;
+    font-family: "Arial", sans-serif;
+    font-weight: normal
+    }
+.staggerGuideLine {
+    fill: none;
+    stroke: #000;
+    stroke-width: 0.5px
+    }
+.keyText {
+    fill: #000;
+    text-anchor: start;
+    font-size: 10px;
+    font-family: "Arial", sans-serif;
+    font-weight: normal
+    }
+/*&#13;
+$Id$&#13;
+&#13;
+default fill styles for multiple datasets (probably only use a single&#13;
+dataset on this graph though)&#13;
+*/
+.key1, .fill1 {
+    fill: #f00;
+    fill-opacity: 0.5;
+    stroke: none;
+    stroke-width: 0.5px
+    }
+.key2, .fill2 {
+    fill: #00f;
+    fill-opacity: 0.5;
+    stroke: none;
+    stroke-width: 1px
+    }
+.key3, .fill3 {
+    fill: #0f0;
+    fill-opacity: 0.5;
+    stroke: none;
+    stroke-width: 1px
+    }
+.key4, .fill4 {
+    fill: #fc0;
+    fill-opacity: 0.5;
+    stroke: none;
+    stroke-width: 1px
+    }
+.key5, .fill5 {
+    fill: #0cf;
+    fill-opacity: 0.5;
+    stroke: none;
+    stroke-width: 1px
+    }
+.key6, .fill6 {
+    fill: #f0f;
+    fill-opacity: 0.5;
+    stroke: none;
+    stroke-width: 1px
+    }
+.key7, .fill7 {
+    fill: #0ff;
+    fill-opacity: 0.5;
+    stroke: none;
+    stroke-width: 1px
+    }
+.key8, .fill8 {
+    fill: #ff0;
+    fill-opacity: 0.5;
+    stroke: none;
+    stroke-width: 1px
+    }
+.key9, .fill9 {
+    fill: #c66;
+    fill-opacity: 0.5;
+    stroke: none;
+    stroke-width: 1px
+    }
+.key10, .fill10 {
+    fill: #639;
+    fill-opacity: 0.5;
+    stroke: none;
+    stroke-width: 1px
+    }
+.key11, .fill11 {
+    fill: #390;
+    fill-opacity: 0.5;
+    stroke: none;
+    stroke-width: 1px
+    }
+.key12, .fill12 {
+    fill: #96F;
+    fill-opacity: 0.5;
+    stroke: none;
+    stroke-width: 1px
+    }</style>
+  </defs>
+  <!-- include default stylesheet if none specified -->
+  <!--SVG Background-->
+  <rect y="0" width="1200" class="svgBackground" x="0" height="700"/>
+  <g transform="translate (28.599999999999998 26)">
+    <rect y="0" x="0" height="343.0" class="graphBackground" width="1046.4"/>
+    <path id="xAxis" d="M 0 0 v343.0" class="axis"/>
+    <path id="yAxis" d="M 0 343.0 h1046.4" class="axis"/>
+    <text class="xAxisLabels" x="9.178947368421053" y="358.0" transform="rotate(90 9 346) translate(0 -3)" style="text-anchor: start">ANGOULEME &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="27.53684210526316" y="358.0" transform="rotate(90 27 346) translate(0 -3)" style="text-anchor: start">BORDEAUX ST JEAN &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="45.89473684210526" y="358.0" transform="rotate(90 45 346) translate(0 -3)" style="text-anchor: start">BREST &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="64.25263157894737" y="358.0" transform="rotate(90 64 346) translate(0 -3)" style="text-anchor: start">LA ROCHELLE VILLE &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="82.61052631578947" y="358.0" transform="rotate(90 82 346) translate(0 -3)" style="text-anchor: start">LE MANS &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="100.96842105263157" y="358.0" transform="rotate(90 100 346) translate(0 -3)" style="text-anchor: start">NANTES &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="119.32631578947368" y="358.0" transform="rotate(90 119 346) translate(0 -3)" style="text-anchor: start">POITIERS &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="137.6842105263158" y="358.0" transform="rotate(90 137 346) translate(0 -3)" style="text-anchor: start">QUIMPER &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="156.0421052631579" y="358.0" transform="rotate(90 156 346) translate(0 -3)" style="text-anchor: start">RENNES &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="174.4" y="358.0" transform="rotate(90 174 346) translate(0 -3)" style="text-anchor: start">TOULOUSE MATABIAU &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="192.7578947368421" y="358.0" transform="rotate(90 192 346) translate(0 -3)" style="text-anchor: start">TOURS &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="211.11578947368423" y="358.0" transform="rotate(90 211 346) translate(0 -3)" style="text-anchor: start">ST PIERRE DES CORPS &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="229.47368421052633" y="358.0" transform="rotate(90 229 346) translate(0 -3)" style="text-anchor: start">ANGERS SAINT LAUD &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="247.83157894736843" y="358.0" transform="rotate(90 247 346) translate(0 -3)" style="text-anchor: start">VANNES &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="266.18947368421055" y="358.0" transform="rotate(90 266 346) translate(0 -3)" style="text-anchor: start">LAVAL &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="284.5473684210526" y="358.0" transform="rotate(90 284 346) translate(0 -3)" style="text-anchor: start">ST MALO &lt;-&gt; PARIS MONTPARNASSE</text>
+    <text class="xAxisLabels" x="302.90526315789475" y="358.0" transform="rotate(90 302 346) translate(0 -3)" style="text-anchor: start">RENNES &lt;-&gt; LYON PART DIEU</text>
+    <text class="xAxisLabels" x="321.2631578947369" y="358.0" transform="rotate(90 321 346) translate(0 -3)" style="text-anchor: start">PARIS EST &lt;-&gt; METZ</text>
+    <text class="xAxisLabels" x="339.62105263157895" y="358.0" transform="rotate(90 339 346) translate(0 -3)" style="text-anchor: start">NANCY &lt;-&gt; PARIS EST</text>
+    <text class="xAxisLabels" x="357.9789473684211" y="358.0" transform="rotate(90 357 346) translate(0 -3)" style="text-anchor: start">REIMS &lt;-&gt; PARIS EST</text>
+    <text class="xAxisLabels" x="376.33684210526314" y="358.0" transform="rotate(90 376 346) translate(0 -3)" style="text-anchor: start">STRASBOURG &lt;-&gt; PARIS EST</text>
+    <text class="xAxisLabels" x="394.69473684210527" y="358.0" transform="rotate(90 394 346) translate(0 -3)" style="text-anchor: start">STRASBOURG &lt;-&gt; NANTES</text>
+    <text class="xAxisLabels" x="413.0526315789474" y="358.0" transform="rotate(90 413 346) translate(0 -3)" style="text-anchor: start">ARRAS &lt;-&gt; PARIS NORD</text>
+    <text class="xAxisLabels" x="431.41052631578947" y="358.0" transform="rotate(90 431 346) translate(0 -3)" style="text-anchor: start">DUNKERQUE &lt;-&gt; PARIS NORD</text>
+    <text class="xAxisLabels" x="449.7684210526316" y="358.0" transform="rotate(90 449 346) translate(0 -3)" style="text-anchor: start">LILLE &lt;-&gt; PARIS NORD</text>
+    <text class="xAxisLabels" x="468.1263157894737" y="358.0" transform="rotate(90 468 346) translate(0 -3)" style="text-anchor: start">LYON PART DIEU &lt;-&gt; LILLE</text>
+    <text class="xAxisLabels" x="486.4842105263158" y="358.0" transform="rotate(90 486 346) translate(0 -3)" style="text-anchor: start">MARSEILLE ST CHARLES &lt;-&gt; LILLE</text>
+    <text class="xAxisLabels" x="504.8421052631579" y="358.0" transform="rotate(90 504 346) translate(0 -3)" style="text-anchor: start">DOUAI &lt;-&gt; PARIS NORD</text>
+    <text class="xAxisLabels" x="523.2" y="358.0" transform="rotate(90 523 346) translate(0 -3)" style="text-anchor: start">AVIGNON TGV &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="541.5578947368422" y="358.0" transform="rotate(90 541 346) translate(0 -3)" style="text-anchor: start">BESANCON-FRANCHE-COMTE-TGV &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="559.9157894736842" y="358.0" transform="rotate(90 559 346) translate(0 -3)" style="text-anchor: start">CHAMBERY CHALLES LES EAUX &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="578.2736842105263" y="358.0" transform="rotate(90 578 346) translate(0 -3)" style="text-anchor: start">DIJON VILLE &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="596.6315789473684" y="358.0" transform="rotate(90 596 346) translate(0 -3)" style="text-anchor: start">GRENOBLE &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="614.9894736842106" y="358.0" transform="rotate(90 614 346) translate(0 -3)" style="text-anchor: start">LYON PART DIEU &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="633.3473684210527" y="358.0" transform="rotate(90 633 346) translate(0 -3)" style="text-anchor: start">MARSEILLE ST CHARLES &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="651.7052631578947" y="358.0" transform="rotate(90 651 346) translate(0 -3)" style="text-anchor: start">MONTPELLIER &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="670.0631578947368" y="358.0" transform="rotate(90 670 346) translate(0 -3)" style="text-anchor: start">NICE VILLE &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="688.421052631579" y="358.0" transform="rotate(90 688 346) translate(0 -3)" style="text-anchor: start">NIMES &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="706.7789473684211" y="358.0" transform="rotate(90 706 346) translate(0 -3)" style="text-anchor: start">PERPIGNAN &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="725.1368421052632" y="358.0" transform="rotate(90 725 346) translate(0 -3)" style="text-anchor: start">TOULON &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="743.4947368421052" y="358.0" transform="rotate(90 743 346) translate(0 -3)" style="text-anchor: start">VALENCE-ALIXAN TGV &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="761.8526315789474" y="358.0" transform="rotate(90 761 346) translate(0 -3)" style="text-anchor: start">SAINT ETIENNE CHATEAUCREUX &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="780.2105263157895" y="358.0" transform="rotate(90 780 346) translate(0 -3)" style="text-anchor: start">BELLEGARDE (AIN ) &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="798.5684210526316" y="358.0" transform="rotate(90 798 346) translate(0 -3)" style="text-anchor: start">AIX EN PROVENCE TGV &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="816.9263157894737" y="358.0" transform="rotate(90 816 346) translate(0 -3)" style="text-anchor: start">ANNECY &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="835.2842105263159" y="358.0" transform="rotate(90 835 346) translate(0 -3)" style="text-anchor: start">LE CREUSOT-MONTCEAU-MONTCHANIN &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="853.6421052631579" y="358.0" transform="rotate(90 853 346) translate(0 -3)" style="text-anchor: start">MACON LOCHE &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="872.0" y="358.0" transform="rotate(90 872 346) translate(0 -3)" style="text-anchor: start">MARSEILLE ST CHARLES &lt;-&gt; LYON PART DIEU</text>
+    <text class="xAxisLabels" x="890.3578947368421" y="358.0" transform="rotate(90 890 346) translate(0 -3)" style="text-anchor: start">MONTPELLIER &lt;-&gt; LYON PART DIEU</text>
+    <text class="xAxisLabels" x="908.7157894736843" y="358.0" transform="rotate(90 908 346) translate(0 -3)" style="text-anchor: start">MULHOUSE VILLE &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="927.0736842105264" y="358.0" transform="rotate(90 927 346) translate(0 -3)" style="text-anchor: start">GENEVE &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="945.4315789473684" y="358.0" transform="rotate(90 945 346) translate(0 -3)" style="text-anchor: start">ZURICH &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="963.7894736842105" y="358.0" transform="rotate(90 963 346) translate(0 -3)" style="text-anchor: start">LAUSANNE &lt;-&gt; PARIS-LYON</text>
+    <text class="xAxisLabels" x="982.1473684210526" y="358.0" transform="rotate(90 982 346) translate(0 -3)" style="text-anchor: start">BELGIQUE-PAYS-BAS &lt;-&gt; PARIS NORD</text>
+    <text class="xAxisLabels" x="1000.5052631578948" y="358.0" transform="rotate(90 1000 346) translate(0 -3)" style="text-anchor: start">FRANCFORT &lt;-&gt; PARIS EST</text>
+    <text class="xAxisLabels" x="1018.8631578947369" y="358.0" transform="rotate(90 1018 346) translate(0 -3)" style="text-anchor: start">STUTTGART &lt;-&gt; PARIS EST</text>
+    <text class="xAxisLabels" x="1037.221052631579" y="358.0" transform="rotate(90 1037 346) translate(0 -3)" style="text-anchor: start">ITALIE &lt;-&gt; PARIS-LYON</text>
+    <text class="yAxisLabels" x="-3" y="345.3333333333333" style="text-anchor: end">0</text>
+    <text class="yAxisLabels" x="-3" y="313.0333333333333" style="text-anchor: end">10</text>
+    <text class="yAxisLabels" x="-3" y="280.73333333333335" style="text-anchor: end">20</text>
+    <text class="yAxisLabels" x="-3" y="248.43333333333334" style="text-anchor: end">30</text>
+    <text class="yAxisLabels" x="-3" y="216.13333333333333" style="text-anchor: end">40</text>
+    <text class="yAxisLabels" x="-3" y="183.83333333333331" style="text-anchor: end">50</text>
+    <text class="yAxisLabels" x="-3" y="151.53333333333333" style="text-anchor: end">60</text>
+    <text class="yAxisLabels" x="-3" y="119.23333333333335" style="text-anchor: end">70</text>
+    <text class="yAxisLabels" x="-3" y="86.93333333333334" style="text-anchor: end">80</text>
+    <text class="yAxisLabels" x="-3" y="54.633333333333326" style="text-anchor: end">90</text>
+    <text class="yAxisLabels" x="-3" y="22.333333333333314" style="text-anchor: end">100</text>
+    <path d="M 0 310.7 h1046.4" class="guideLines"/>
+    <path d="M 0 278.4 h1046.4" class="guideLines"/>
+    <path d="M 0 246.10000000000002 h1046.4" class="guideLines"/>
+    <path d="M 0 213.8 h1046.4" class="guideLines"/>
+    <path d="M 0 181.5 h1046.4" class="guideLines"/>
+    <path d="M 0 149.20000000000002 h1046.4" class="guideLines"/>
+    <path d="M 0 116.90000000000003 h1046.4" class="guideLines"/>
+    <path d="M 0 84.60000000000002 h1046.4" class="guideLines"/>
+    <path d="M 0 52.30000000000001 h1046.4" class="guideLines"/>
+    <path d="M 0 20.0 h1046.4" class="guideLines"/>
+    <rect y="22.89469071582039" x="0.0" height="320.1053092841796" class="fill1" width="4.178947368421053"/>
+    <rect y="340.10530928417955" x="4.178947368421053" height="2.8946907158204227" class="fill2" width="4.178947368421053"/>
+    <rect y="22.484097607446586" x="18.357894736842105" height="320.5159023925534" class="fill1" width="4.178947368421053"/>
+    <rect y="340.5159023925534" x="22.53684210526316" height="2.484097607446587" class="fill2" width="4.178947368421053"/>
+    <rect y="20.06171626350465" x="36.71578947368421" height="322.93828373649535" class="fill1" width="4.178947368421053"/>
+    <rect y="342.9382837364953" x="40.89473684210526" height="0.061716263504697645" class="fill2" width="4.178947368421053"/>
+    <rect y="22.032838121334066" x="55.07368421052632" height="320.96716187866593" class="fill1" width="4.178947368421053"/>
+    <rect y="340.96716187866593" x="59.25263157894737" height="2.0328381213340756" class="fill2" width="4.178947368421053"/>
+    <rect y="22.17678813338989" x="73.43157894736842" height="320.8232118666101" class="fill1" width="4.178947368421053"/>
+    <rect y="340.8232118666101" x="77.61052631578947" height="2.176788133389893" class="fill2" width="4.178947368421053"/>
+    <rect y="21.47038846176082" x="91.78947368421052" height="321.5296115382392" class="fill1" width="4.178947368421053"/>
+    <rect y="341.5296115382392" x="95.96842105263157" height="1.4703884617607954" class="fill2" width="4.178947368421053"/>
+    <rect y="22.058278966684327" x="110.14736842105263" height="320.9417210333157" class="fill1" width="4.178947368421053"/>
+    <rect y="340.9417210333156" x="114.32631578947368" height="2.0582789666843553" class="fill2" width="4.178947368421053"/>
+    <rect y="20.162377661537676" x="128.50526315789475" height="322.8376223384623" class="fill1" width="4.178947368421053"/>
+    <rect y="342.8376223384623" x="132.6842105263158" height="0.16237766153767832" class="fill2" width="4.178947368421053"/>
+    <rect y="21.023552637115984" x="146.86315789473684" height="321.976447362884" class="fill1" width="4.178947368421053"/>
+    <rect y="341.9764473628841" x="151.0421052631579" height="1.023552637115941" class="fill2" width="4.178947368421053"/>
+    <rect y="20.30900767470041" x="165.22105263157894" height="322.6909923252996" class="fill1" width="4.178947368421053"/>
+    <rect y="342.6909923252996" x="169.4" height="0.3090076747004174" class="fill2" width="4.178947368421053"/>
+    <rect y="24.25147211638381" x="183.57894736842104" height="318.7485278836162" class="fill1" width="4.178947368421053"/>
+    <rect y="338.7485278836162" x="187.7578947368421" height="4.251472116383789" class="fill2" width="4.178947368421053"/>
+    <rect y="22.898346365850557" x="201.93684210526317" height="320.10165363414944" class="fill1" width="4.178947368421053"/>
+    <rect y="340.10165363414944" x="206.11578947368423" height="2.898346365850532" class="fill2" width="4.178947368421053"/>
+    <rect y="21.528808519675977" x="220.29473684210527" height="321.471191480324" class="fill1" width="4.178947368421053"/>
+    <rect y="341.471191480324" x="224.47368421052633" height="1.5288085196759609" class="fill2" width="4.178947368421053"/>
+    <rect y="21.651520168826607" x="238.65263157894736" height="321.3484798311734" class="fill1" width="4.178947368421053"/>
+    <rect y="341.34847983117345" x="242.83157894736843" height="1.6515201688265768" class="fill2" width="4.178947368421053"/>
+    <rect y="21.25379812474864" x="257.0105263157895" height="321.74620187525136" class="fill1" width="4.178947368421053"/>
+    <rect y="341.74620187525136" x="261.18947368421055" height="1.2537981247486614" class="fill2" width="4.178947368421053"/>
+    <rect y="20.17624590760272" x="275.36842105263156" height="322.8237540923973" class="fill1" width="4.178947368421053"/>
+    <rect y="342.8237540923972" x="279.5473684210526" height="0.17624590760276462" class="fill2" width="4.178947368421053"/>
+    <rect y="22.60221550855988" x="293.7263157894737" height="320.3977844914401" class="fill1" width="4.178947368421053"/>
+    <rect y="340.39778449144006" x="297.90526315789475" height="2.6022155085599197" class="fill2" width="4.178947368421053"/>
+    <rect y="20.184536068366754" x="312.0842105263158" height="322.81546393163325" class="fill1" width="4.178947368421053"/>
+    <rect y="342.8154639316333" x="316.2631578947369" height="0.1845360683667116" class="fill2" width="4.178947368421053"/>
+    <rect y="20.917251448710942" x="330.4421052631579" height="322.08274855128906" class="fill1" width="4.178947368421053"/>
+    <rect y="342.08274855128906" x="334.62105263157895" height="0.9172514487109179" class="fill2" width="4.178947368421053"/>
+    <rect y="21.21980773455931" x="348.8" height="321.7801922654407" class="fill1" width="4.178947368421053"/>
+    <rect y="341.78019226544075" x="352.9789473684211" height="1.2198077345592777" class="fill2" width="4.178947368421053"/>
+    <rect y="22.33107552393949" x="367.1578947368421" height="320.6689244760605" class="fill1" width="4.178947368421053"/>
+    <rect y="340.66892447606045" x="371.33684210526314" height="2.3310755239395253" class="fill2" width="4.178947368421053"/>
+    <rect y="20.746204620462038" x="385.5157894736842" height="322.25379537953796" class="fill1" width="4.178947368421053"/>
+    <rect y="342.25379537953796" x="389.69473684210527" height="0.7462046204620462" class="fill2" width="4.178947368421053"/>
+    <rect y="23.15606162089756" x="403.87368421052633" height="319.84393837910244" class="fill1" width="4.178947368421053"/>
+    <rect y="339.8439383791025" x="408.0526315789474" height="3.156061620897522" class="fill2" width="4.178947368421053"/>
+    <rect y="20.178370915784626" x="422.2315789473684" height="322.8216290842154" class="fill1" width="4.178947368421053"/>
+    <rect y="342.8216290842154" x="426.41052631578947" height="0.17837091578462952" class="fill2" width="4.178947368421053"/>
+    <rect y="23.642190536951546" x="440.58947368421053" height="319.35780946304845" class="fill1" width="4.178947368421053"/>
+    <rect y="339.3578094630484" x="444.7684210526316" height="3.6421905369515866" class="fill2" width="4.178947368421053"/>
+    <rect y="23.29485364887057" x="458.94736842105266" height="319.70514635112943" class="fill1" width="4.178947368421053"/>
+    <rect y="339.7051463511295" x="463.1263157894737" height="3.2948536488705202" class="fill2" width="4.178947368421053"/>
+    <rect y="25.764806143839508" x="477.30526315789473" height="317.2351938561605" class="fill1" width="4.178947368421053"/>
+    <rect y="337.2351938561605" x="481.4842105263158" height="5.7648061438395075" class="fill2" width="4.178947368421053"/>
+    <rect y="22.987977083031524" x="495.66315789473686" height="320.0120229169685" class="fill1" width="4.178947368421053"/>
+    <rect y="340.0120229169684" x="499.8421052631579" height="2.9879770830315535" class="fill2" width="4.178947368421053"/>
+    <rect y="22.847440099793175" x="514.021052631579" height="320.1525599002068" class="fill1" width="4.178947368421053"/>
+    <rect y="340.1525599002068" x="518.2" height="2.8474400997931775" class="fill2" width="4.178947368421053"/>
+    <rect y="23.274995964346658" x="532.3789473684211" height="319.72500403565334" class="fill1" width="4.178947368421053"/>
+    <rect y="339.72500403565334" x="536.5578947368422" height="3.274995964346638" class="fill2" width="4.178947368421053"/>
+    <rect y="23.968065892453637" x="550.7368421052631" height="319.03193410754636" class="fill1" width="4.178947368421053"/>
+    <rect y="339.0319341075464" x="554.9157894736842" height="3.968065892453603" class="fill2" width="4.178947368421053"/>
+    <rect y="22.450022601934734" x="569.0947368421052" height="320.54997739806527" class="fill1" width="4.178947368421053"/>
+    <rect y="340.54997739806527" x="573.2736842105263" height="2.4500226019347258" class="fill2" width="4.178947368421053"/>
+    <rect y="22.643471912702694" x="587.4526315789474" height="320.3565280872973" class="fill1" width="4.178947368421053"/>
+    <rect y="340.3565280872973" x="591.6315789473684" height="2.643471912702682" class="fill2" width="4.178947368421053"/>
+    <rect y="21.32973668273462" x="605.8105263157895" height="321.6702633172654" class="fill1" width="4.178947368421053"/>
+    <rect y="341.6702633172654" x="609.9894736842106" height="1.329736682734608" class="fill2" width="4.178947368421053"/>
+    <rect y="22.91503044699283" x="624.1684210526316" height="320.08496955300717" class="fill1" width="4.178947368421053"/>
+    <rect y="340.08496955300717" x="628.3473684210527" height="2.9150304469928385" class="fill2" width="4.178947368421053"/>
+    <rect y="22.599053890798416" x="642.5263157894736" height="320.4009461092016" class="fill1" width="4.178947368421053"/>
+    <rect y="340.4009461092016" x="646.7052631578947" height="2.5990538907984138" class="fill2" width="4.178947368421053"/>
+    <rect y="26.127686440763966" x="660.8842105263158" height="316.87231355923603" class="fill1" width="4.178947368421053"/>
+    <rect y="336.8723135592361" x="665.0631578947368" height="6.1276864407639176" class="fill2" width="4.178947368421053"/>
+    <rect y="24.111284616925673" x="679.2421052631579" height="318.8887153830743" class="fill1" width="4.178947368421053"/>
+    <rect y="338.8887153830743" x="683.421052631579" height="4.1112846169256905" class="fill2" width="4.178947368421053"/>
+    <rect y="22.09333273562129" x="697.6" height="320.9066672643787" class="fill1" width="4.178947368421053"/>
+    <rect y="340.9066672643787" x="701.7789473684211" height="2.0933327356212894" class="fill2" width="4.178947368421053"/>
+    <rect y="25.735012472841447" x="715.9578947368421" height="317.26498752715855" class="fill1" width="4.178947368421053"/>
+    <rect y="337.2649875271586" x="720.1368421052632" height="5.735012472841395" class="fill2" width="4.178947368421053"/>
+    <rect y="23.944281833934326" x="734.3157894736842" height="319.0557181660657" class="fill1" width="4.178947368421053"/>
+    <rect y="339.0557181660657" x="738.4947368421052" height="3.9442818339343413" class="fill2" width="4.178947368421053"/>
+    <rect y="23.141885674725927" x="752.6736842105263" height="319.8581143252741" class="fill1" width="4.178947368421053"/>
+    <rect y="339.8581143252741" x="756.8526315789474" height="3.1418856747259296" class="fill2" width="4.178947368421053"/>
+    <rect y="22.182888007514862" x="771.0315789473684" height="320.81711199248514" class="fill1" width="4.178947368421053"/>
+    <rect y="340.81711199248514" x="775.2105263157895" height="2.1828880075148733" class="fill2" width="4.178947368421053"/>
+    <rect y="24.126261485073826" x="789.3894736842105" height="318.8737385149262" class="fill1" width="4.178947368421053"/>
+    <rect y="338.8737385149261" x="793.5684210526316" height="4.126261485073864" class="fill2" width="4.178947368421053"/>
+    <rect y="21.483696879941817" x="807.7473684210527" height="321.5163031200582" class="fill1" width="4.178947368421053"/>
+    <rect y="341.51630312005824" x="811.9263157894737" height="1.4836968799417656" class="fill2" width="4.178947368421053"/>
+    <rect y="24.26265115882154" x="826.1052631578948" height="318.73734884117846" class="fill1" width="4.178947368421053"/>
+    <rect y="338.73734884117846" x="830.2842105263159" height="4.262651158821551" class="fill2" width="4.178947368421053"/>
+    <rect y="22.32444256589855" x="844.4631578947368" height="320.67555743410145" class="fill1" width="4.178947368421053"/>
+    <rect y="340.67555743410145" x="848.6421052631579" height="2.324442565898537" class="fill2" width="4.178947368421053"/>
+    <rect y="89.9732223731884" x="862.8210526315789" height="253.0267776268116" class="fill1" width="4.178947368421053"/>
+    <rect y="273.0267776268116" x="867.0" height="69.9732223731884" class="fill2" width="4.178947368421053"/>
+    <rect y="26.634088144474617" x="881.1789473684211" height="316.3659118555254" class="fill1" width="4.178947368421053"/>
+    <rect y="336.3659118555254" x="885.3578947368421" height="6.634088144474596" class="fill2" width="4.178947368421053"/>
+    <rect y="23.479571890495095" x="899.5368421052632" height="319.5204281095049" class="fill1" width="4.178947368421053"/>
+    <rect y="339.5204281095049" x="903.7157894736843" height="3.4795718904950763" class="fill2" width="4.178947368421053"/>
+    <rect y="20.007838252126362" x="917.8947368421053" height="322.99216174787364" class="fill1" width="4.178947368421053"/>
+    <rect y="342.9921617478736" x="922.0736842105264" height="0.007838252126398894" class="fill2" width="4.178947368421053"/>
+    <rect y="20.022644154933687" x="936.2526315789473" height="322.9773558450663" class="fill1" width="4.178947368421053"/>
+    <rect y="342.9773558450663" x="940.4315789473684" height="0.022644154933691655" class="fill2" width="4.178947368421053"/>
+    <rect y="20.026233715603723" x="954.6105263157895" height="322.9737662843963" class="fill1" width="4.178947368421053"/>
+    <rect y="342.9737662843962" x="958.7894736842105" height="0.026233715603781554" class="fill2" width="4.178947368421053"/>
+    <rect y="20.04159871374094" x="972.9684210526316" height="322.95840128625906" class="fill1" width="4.178947368421053"/>
+    <rect y="342.95840128625906" x="977.1473684210526" height="0.041598713740928876" class="fill2" width="4.178947368421053"/>
+    <rect y="20.07117882117882" x="991.3263157894737" height="322.9288211788212" class="fill1" width="4.178947368421053"/>
+    <rect y="342.9288211788212" x="995.5052631578948" height="0.07117882117882118" class="fill2" width="4.178947368421053"/>
+    <rect y="20.030865591771487" x="1009.6842105263158" height="322.9691344082285" class="fill1" width="4.178947368421053"/>
+    <rect y="342.9691344082285" x="1013.8631578947369" height="0.03086559177149211" class="fill2" width="4.178947368421053"/>
+    <rect y="20.1156186612576" x="1028.042105263158" height="322.8843813387424" class="fill1" width="4.178947368421053"/>
+    <rect y="342.8843813387424" x="1032.221052631579" height="0.11561866125760649" class="fill2" width="4.178947368421053"/>
+    <g/>
+  </g>
+  <text y="16" x="600.0" class="mainTitle">Pourcentage de trains à l'heure/en retard en Avril 2012 (source SNCF)</text>
+  <g transform="translate(1085 46)">
+    <rect y="0" x="0" height="12" class="key1" width="12"/>
+    <text y="12" x="17" class="keyText">Trains à l'heure</text>
+    <rect y="17" x="0" height="12" class="key2" width="12"/>
+    <text y="29" x="17" class="keyText">Trains en retard</text>
+  </g>
+</svg>
