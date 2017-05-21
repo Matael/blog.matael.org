@@ -27,6 +27,16 @@
 .clear {
   clear: both;
 }
+.align-right {
+  float: right;
+}
+.align-left {
+  float: left;
+}
+.align-center {
+  margin: auto;
+  display: block;
+}
 /* Main structure */
 html {
   height: 100%;
