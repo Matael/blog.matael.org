@@ -9,309 +9,257 @@
  * this stuff is worth it, you can buy me a beer or coffee in return
  *
  */
-
 /* Webfont: LatoLatin-Light */
 @font-face {
-    font-family: 'LatoLatinWebLight';
-    src: url('../fonts/LatoLatin/LatoLatin-Light.eot'); /* IE9 Compat Modes */
-    src: url('../fonts/LatoLatin/LatoLatin-Light.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
-         url('../fonts/LatoLatin/LatoLatin-Light.woff2') format('woff2'), /* Modern Browsers */
-         url('../fonts/LatoLatin/LatoLatin-Light.woff') format('woff'), /* Modern Browsers */
-         url('../fonts/LatoLatin/LatoLatin-Light.ttf') format('truetype');
-    font-style: normal;
-    font-weight: normal;
-    text-rendering: optimizeLegibility;
+  font-family: 'LatoLatinWebLight';
+  src: url('../fonts/LatoLatin/LatoLatin-Light.eot');
+  /* IE9 Compat Modes */
+  src: url('../fonts/LatoLatin/LatoLatin-Light.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */ url('../fonts/LatoLatin/LatoLatin-Light.woff2') format('woff2'), /* Modern Browsers */ url('../fonts/LatoLatin/LatoLatin-Light.woff') format('woff'), /* Modern Browsers */ url('../fonts/LatoLatin/LatoLatin-Light.ttf') format('truetype');
+  font-style: normal;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
 }
-
 /* Colors */
-@base: #1c1c1c;
-@light: #fafafa;
-@accent: #ff5a09; /* orange */
-
-.accent { color: @accent; }
-.clear { clear: both; }
-
+/* orange */
+.accent {
+  color: #ff5a09;
+}
+.clear {
+  clear: both;
+}
 /* Main structure */
-html { height: 100%; }
+html {
+  height: 100%;
+}
 body {
-	font-family: "LatoLatinWebLight", sans-serif;
-	background: @light;
-	color: @base;
-	width: 100%;
-	height: 100%;
-	min-width: 100%;
-	overflow-x: hidden;
-	margin: 0;
-	font-size: 1.2em;
+  font-family: "LatoLatinWebLight", sans-serif;
+  background: #fafafa;
+  color: #1c1c1c;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  font-size: 1.2em;
 }
-
 #page {
-	width: 70%;
-	min-height: 100%;
-	margin: auto;
-	margin-top: 5%;
-	padding-bottom: 5%;
+  width: 70%;
+  min-height: 100%;
+  margin: auto;
+  margin-top: 5%;
+  padding-bottom: 5%;
 }
-
-a, a:visited {
-	color: @base;
-
-	&:hover {
-		color: @accent;
-	}
+a,
+a:visited {
+  color: #1c1c1c;
 }
-
+a:hover,
+a:visited:hover {
+  color: #ff5a09;
+}
 blockquote {
-	font-style: italic;
+  font-style: italic;
 }
-
 .highlight {
-	padding: 10px;
-	padding-left: 30px;
+  padding: 10px;
+  padding-left: 30px;
 }
-
-
 #logo {
-	min-width: 100%;
-	background: @base;
-	color: @light;
-
-	#logo-wrapper {
-		width: 70%;
-		margin: auto;
-	}
-
-	/* Containing title & quote */
-	header {
-		h1 {
-			font-size: 3em;
-			margin: 0;
-			padding-top: 4%;
-			font-variant: small-caps;
-
-			a, a:visited, a:hover {
-				color: @light;
-				text-decoration: none;
-			}
-
-			.big {
-				font-size: 1.3em;
-				letter-spacing: 5px;
-			}
-			.overbar {
-				border-top: 2px solid @light;
-			}
-		}
-		#quote {
-			font-size: 1.1em;
-			text-align: right;
-			width: 40%;
-			float: right;
-		}
-	}
-
-	/* Menu */
-	nav {
-		text-align: right;
-		margin-top: 4%;
-		border-bottom: 1px solid @base;
-
-		a {
-			text-decoration: none;
-			color: @light;
-			font-weight: bold;
-		}
-
-		ul {
-			list-style-type: none;
-			list-style-position: inside;
-
-			padding: 0;
-			margin: 0;
-			margin-left: -2%; /* compensate for the first element */
-
-			li {
-				display: inline;
-
-				padding: 0px 2% 0px 2%;
-				margin-right: 3%;
-
-				/* Classy underline when hovered */
-				&:hover {
-					border-bottom: 5px solid @accent;
-				}
-
-			}
-		}
-	}
-
+  min-width: 100%;
+  background: #1c1c1c;
+  color: #fafafa;
+  /* Containing title & quote */
+  /* Menu */
 }
-
+#logo #logo-wrapper {
+  width: 70%;
+  margin: auto;
+}
+#logo header h1 {
+  font-size: 3em;
+  margin: 0;
+  padding-top: 4%;
+  font-variant: small-caps;
+}
+#logo header h1 a,
+#logo header h1 a:visited,
+#logo header h1 a:hover {
+  color: #fafafa;
+  text-decoration: none;
+}
+#logo header h1 .big {
+  font-size: 1.3em;
+  letter-spacing: 5px;
+}
+#logo header h1 .overbar {
+  border-top: 2px solid #fafafa;
+}
+#logo header #quote {
+  font-size: 1.1em;
+  text-align: right;
+  width: 40%;
+  float: right;
+}
+#logo nav {
+  text-align: right;
+  margin-top: 4%;
+  border-bottom: 1px solid #1c1c1c;
+}
+#logo nav a {
+  text-decoration: none;
+  color: #fafafa;
+  font-weight: bold;
+}
+#logo nav ul {
+  list-style-type: none;
+  list-style-position: inside;
+  padding: 0;
+  margin: 0;
+  margin-left: -2%;
+  /* compensate for the first element */
+}
+#logo nav ul li {
+  display: inline;
+  padding: 0px 2% 0px 2%;
+  margin-right: 3%;
+  /* Classy underline when hovered */
+}
+#logo nav ul li:hover {
+  border-bottom: 5px solid #ff5a09;
+}
 /* nav */
 /* content */
-
 #content {
-	line-height: 1.7;
-
-	header {
-		h1 {
-			font-size: 2em;
-		}
-	}
-
+  line-height: 1.7;
 }
-
-
-article {
-
-	#meta {
-		float: left;
-		min-width: 15%;
-
-		text-align: right;
-		border-right: 1px solid @accent;
-		padding-right: 2.5%;
-		padding-bottom: 10%;
-		padding-top: 1%;
-	}
-
-	.tags, .by-line {
-		a, a:visited {
-			color: @accent;
-			text-decoration: none;
-		}
-	}
-
-	.by-line {
-		text-align: right;
-	}
-
-	.tags {
-		list-style-type: none;
-
-		li a::before {
-			content: "#";
-		}
-	}
-
-	#article_body {
-		margin-left: 20%;
-		width: 80%;
-		font-size: 1.1em;
-
-	}
+#content header h1 {
+  font-size: 2em;
 }
-
-#articles-list { height: 100%; }
+article #meta {
+  float: left;
+  min-width: 15%;
+  text-align: right;
+  border-right: 1px solid #ff5a09;
+  padding-right: 2.5%;
+  padding-bottom: 10%;
+  padding-top: 1%;
+}
+article .tags a,
+article .by-line a,
+article .tags a:visited,
+article .by-line a:visited {
+  color: #ff5a09;
+  text-decoration: none;
+}
+article .by-line {
+  text-align: right;
+}
+article .tags {
+  list-style-type: none;
+}
+article .tags li a::before {
+  content: "#";
+}
+article #article_body {
+  margin-left: 20%;
+  width: 80%;
+  font-size: 1.1em;
+}
+#articles-list {
+  height: 100%;
+}
 .wrapper {
-	padding-bottom: 5%;
-	height: 100;
+  padding-bottom: 5%;
+  height: 100;
 }
 .article-item {
-	position: relative;
-	margin-bottom: 3%;
-	height: 15%;
-
-	&:last {
-		margin-bottom: 0;
-	}
-
-	.left-col {
-		float: left;
-		padding-right: 2.5%;
-		width: 82.5%;
-		height: 100%;
-		border-right: 1px solid @accent;
-	}
-	.right-col {
-		height: 100%;
-		width: 10%;
-		margin-left: 87.5%;
-		display: table;
-	}
-
-	.tags, .by-line {
-		a, a:visited {
-			text-decoration: none;
-			color: @accent;
-		}
-		a:hover {
-			text-decoration: underline;
-		}
-	}
-
-	.tags {
-		list-style-type: none;
-		height: 100%;
-		padding-left: 0;
-		display: table-cell;
-		vertical-align: middle;
-
-		li a::before {
-			content: "#";
-		}
-	}
-
-	h1 {
-		margin-top: 0;
-
-		a { text-decoration: none; }
-
-		a:hover {
-			text-decoration: none;
-
-		}
-	}
+  position: relative;
+  margin-bottom: 3%;
+  height: 15%;
 }
-
+.article-item:last {
+  margin-bottom: 0;
+}
+.article-item .left-col {
+  float: left;
+  padding-right: 2.5%;
+  width: 82.5%;
+  height: 100%;
+  border-right: 1px solid #ff5a09;
+}
+.article-item .right-col {
+  height: 100%;
+  width: 10%;
+  margin-left: 87.5%;
+  display: table;
+}
+.article-item .tags a,
+.article-item .by-line a,
+.article-item .tags a:visited,
+.article-item .by-line a:visited {
+  text-decoration: none;
+  color: #ff5a09;
+}
+.article-item .tags a:hover,
+.article-item .by-line a:hover {
+  text-decoration: underline;
+}
+.article-item .tags {
+  list-style-type: none;
+  height: 100%;
+  padding-left: 0;
+  display: table-cell;
+  vertical-align: middle;
+}
+.article-item .tags li a::before {
+  content: "#";
+}
+.article-item h1 {
+  margin-top: 0;
+}
+.article-item h1 a {
+  text-decoration: none;
+}
+.article-item h1 a:hover {
+  text-decoration: none;
+}
 .detail-list-header {
-	margin-top: 0;
-	margin-bottom:5%;
-
-	h1 {
-		font-size: 2em;
-		text-indent: 5%;
-	}
+  margin-top: 0;
+  margin-bottom: 5%;
 }
-
+.detail-list-header h1 {
+  font-size: 2em;
+  text-indent: 5%;
+}
 #tagcloud {
-	list-style-type: none;
-	width: 80%;
-	margin: auto;
-	line-height: 2em;
-	text-align: center;
-	font-weight: bold;
-
-	.tag {
-		display: inline;
-		margin-right: 2%;
-
-		a {
-			word-break: keep-all;
-			text-decoration: none;
-			color: @accent;
-
-			&:before {
-				content: "#";
-			}
-		}
-
-		.tagcount {
-			color: lighten(@base, 40%);
-		}
-	}
-
+  list-style-type: none;
+  width: 80%;
+  margin: auto;
+  line-height: 2em;
+  text-align: center;
+  font-weight: bold;
 }
-
+#tagcloud .tag {
+  display: inline;
+  margin-right: 2%;
+}
+#tagcloud .tag a {
+  word-break: keep-all;
+  text-decoration: none;
+  color: #ff5a09;
+}
+#tagcloud .tag a:before {
+  content: "#";
+}
+#tagcloud .tag .tagcount {
+  color: #828282;
+}
 /* Footer */
-
 footer {
-	width: 100%;
-	margin: 0;
-	padding: 1%;
-
-	background: @base;
-	color: @light;
-
-	text-align: center;
+  width: 100%;
+  margin: 0;
+  padding: 1%;
+  background: #1c1c1c;
+  color: #fafafa;
+  text-align: center;
 }
