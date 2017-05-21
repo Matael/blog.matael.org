@@ -32,7 +32,7 @@ if [[ ! $returnval ]]; then
 else
 	echo "Build passed."
 	echo "Syncing..."
-	rsync -a output/ ../prod
+	rsync -a output/ prod/
 	echo "Synced."
 fi
 
