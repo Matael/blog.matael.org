@@ -75,23 +75,18 @@ bit below) if you have another policy, you probably know what you're doing.
   If your domain name is brand new, start by *wiping* completely the zone file: the
   default records are registrar's service that you'll probably not use (you wouldn't be
   reading an article on how to configure a mail server). Also, add a **A** record pointing
-  to your IP for the domain itself and the ``www`` sub-domain.
-
-  .. code-block:: bind
+  to your IP for the domain itself and the ``www`` sub-domain::
 
     @ 10800 IN A 1.2.3.4
     wwww 10800 IN CNAME bad.sex.
 
 We will put the webmail at mail.bad.sex, we need a **A** record for that (you can use a
-**CNAME** if the mail server is supposed also to serve at bad.sex):
-
-.. code-block:: bind
+**CNAME** if the mail server is supposed also to serve at bad.sex)::
 
   mail 10800 IN A 1.2.3.4
 
-Also, it's a mail server: add a **MX** record:
+Also, it's a mail server: add a **MX** record::
 
-.. code-block:: bind
   mail 10800 IN MX 10 mail.bad.sex
 
 We'll come back to that and add a few more records later but for now, save and make sure
@@ -184,9 +179,7 @@ tick the two checkboxes. Then add an admin user for this domain and go back to t
 previous admin panel.
 
 You'll now be able to generate the DKIM record for the new domain. Do it and copy the records value.
-This has to be added to the domain's zone. Go back to your domain's zone and add two records:
-
-.. code-block:: bind
+This has to be added to the domain's zone. Go back to your domain's zone and add two records::
 
   mail 10800 IN TXT "v=spf1 mx ~all"
   mail_domainkey 10800 IN TXT "<DKIM record here>"
