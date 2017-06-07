@@ -111,9 +111,7 @@ Step 3: Get and install Mailcow
 ===============================
 
 So, the server should be up now. Connect as root with the right identity file and create
-yourself a sudo-enabled user:
-
-.. code-block::
+yourself a sudo-enabled user::
 
   local $ ssh-keygen -t ecdsa
         ....
@@ -128,50 +126,41 @@ yourself a sudo-enabled user:
 
 Then, try logging in with your new ``god`` account to the server and try ``sudo -s`` to
 make sure you have the right privileges. If so, go back to the root shell and edit
-``/etc/ssh/sshd_config`` and make sure the line:
-
-.. code-block::
+``/etc/ssh/sshd_config`` and make sure the line::
 
   PermitRootLogging no
 
 exists and is uncommented.
 
-Log in as ``god`` and use the following lines to get mailcow:
 
   **Note**
 
   Here, I used version 0.14, up to date when as I write this post. If you want to check
   the latest one, use `one of these`_.
 
-.. code-block::
+Log in as ``god`` and use the following lines to get mailcow::
 
   local $ ssh god@mail.bad.sex
   remote $ mkdir ~/mailcow_build ; cd ~/mailcow_build
   remote $ wget -O - https://github.com/andryyy/mailcow/archive/v0.14.tar.gz | tar xfz -
   remote $ cd mailcow-*
 
-Edit the mailcow configuration file to reflect your domain name and expected setup:
-
-.. code-block::
+Edit the mailcow configuration file to reflect your domain name and expected setup::
 
   mailcow config file
 
 
-At this point, you probably want to verify that your DNS are propagated:
+At this point, you probably want to verify that your DNS are propagated::
 
-.. _codeèblocks::
-
-  $ dig A mail.bad.sex
-  $ dig MX mail.bad.sex
+  local $ dig A mail.bad.sex
+  local $ dig MX mail.bad.sex
 
 Both should point to the same IP and this IP should be the one of your server.
 
 When you're sure that your DNS records are propagated, start the installer and reply to
-the questions:
+the questions::
 
-.. code-block::
-
-  $ sudo ./install.sh
+  remote $ sudo ./install.sh
 
 Elevated privileges are required because the script is install packages and writing config
 files here and there. I can't stress enough that this guide may be useful but is not a
@@ -210,9 +199,7 @@ Step 5: Testing
 
 We now want to test things. Go to ``https://mail.bad.sex/SOGo`` and enters one of you
 users' credentials. Aside, open a terminal and connect to the server to monitor the mail
-queue:
-
-.. code-block::
+queue::
 
   local $ ssh god@mail.bad.sex
   remote $ sudo -s
@@ -229,9 +216,7 @@ Bonus: Close unneeded ports
 ===========================
 
 It's always a good idea to reduce the attack surface as much as you can. To this end we
-will use ``ufw`` (micro firewall) and set some rules.
-
-.. code-block::
+will use ``ufw`` (micro firewall) and set some rules::
 
   local $ ssh god@mail.bad.sex
   remote $ sudo -s
