@@ -7,6 +7,7 @@ Daech et la politique ont tué la France
 :authors: matael
 :summary: En tout cas, celle que j'aime
 :tags: perso, humeur, imported
+:status: hidden
 
 Bon, ben je crois qu'on y est. J'avais commencé a écrire ce billet il y a longtemps (ou un
 autre qui y ressemblait beaucoup).
